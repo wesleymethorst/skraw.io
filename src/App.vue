@@ -15,7 +15,7 @@
       </div>
       <div class="right-panel">
         <div class="chat-box">Text Box</div>
-        <div class="ai-box">AI guessr</div>
+        <div class="ai-box">AI guess</div>
       </div>
     </div>
   </div>
