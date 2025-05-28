@@ -24,13 +24,14 @@
     </div>
 
     <aside class="rightbar">
-      <textarea placeholder="Type here..."></textarea>
+      <ChatLobby></ChatLobby>
       <div class="ai-box">AI Guess</div>
     </aside>
   </div>
 </template>
 
 <script setup>
+import ChatLobby from '../components/ChatLobby.vue';
 import { ref, onMounted } from 'vue';
 import PlayerList from '../components/PlayerList.vue';
 import CanvasBoard from '../components/CanvasBoard.vue';
@@ -53,7 +54,7 @@ html, body, #app {
 
 .layout {
   display: grid;
-  grid-template-columns: 100px 1fr 160px;
+  grid-template-columns: 100px 1fr 300px;
   grid-template-rows: 50px auto 40px;
   grid-template-areas:
     "sidebar topbar rightbar"
