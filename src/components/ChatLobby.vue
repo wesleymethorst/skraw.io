@@ -22,18 +22,7 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { io } from 'socket.io-client';
 
-// Determine the server URL dynamically
-const getServerUrl = () => {
-  // Check if we're in production (e.g., Vercel)
-  if (import.meta.env.PROD) {
-    // Return the same domain (relative URL) for production
-    return '/';
-  }
-  // For local development
-  return 'http://localhost:3000';
-};
-
-const socket = io(getServerUrl());
+const socket = io('http://localhost:3000');
 const lobbyId = ref('');
 const players = ref(0);
 const maxPlayers = ref(4);

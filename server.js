@@ -6,9 +6,7 @@ const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.NODE_ENV === 'production' 
-      ? [process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "*"] 
-      : "http://localhost:5173",
+    origin: "http://localhost:5173",
     methods: ["GET", "POST"]
   }
 });
@@ -16,11 +14,6 @@ const io = new Server(httpServer, {
 // Express route voor de indexpagina
 app.get('/', (req, res) => {
   res.send('Hallo test');
-});
-
-// API route voor healthcheck
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', lobbies: lobbies.size });
 });
 
 const MAX_PLAYERS_PER_LOBBY = 4;
