@@ -17,12 +17,15 @@
 
 html, body {
   height: 100%;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .app {
-  height: 100vh;
   width: 100vw;
+  min-height: 100vh;
+  background-image: url('./assets/skraw_background_1920x1080.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   overflow: hidden;
 }
 </style>
