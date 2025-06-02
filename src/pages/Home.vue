@@ -6,7 +6,13 @@
     <div class="game-interface">
       <!-- Name input and language selector row -->
       <div class="input-row">
-        <input type="text" class="name-input" placeholder="Enter your name" />
+             <input 
+          type="text" 
+          class="name-input" 
+          placeholder="Enter your name" 
+          v-model="playerName" 
+          @keyup.enter="playGame"
+        />
         <select class="language-select">
           <option value="dutch">Dutch</option>
           <option value="english">English</option>
@@ -21,7 +27,13 @@
       </div>
       
       <!-- Play buttons -->
-      <button class="play-button">Play!</button>
+        <a 
+        :href="`/game?name=${encodeURIComponent(playerName)}&lang=${selectedLanguage}`" 
+        class="play-button"
+        @click.prevent="playGame"
+      > 
+        Play!
+      </a>
       <button class="private-room-button">Create Private Room</button>
     </div>
     
@@ -58,7 +70,26 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { ref,onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+const playerName = ref('')
+const selectedLanguage = ref('english')
+
+const playGame = () => {
+  if (playerName.value.trim()) {
+    router.push({
+      path: '/game',
+      query: {
+        name: encodeURIComponent(playerName.value),
+        lang: selectedLanguage.value
+      }
+    })
+  } else {
+    alert('Please enter your name before playing!')
+  }
+}
 
 onMounted(() => {
   document.title = 'Skraw - Free multiplayer sketching, drawing & guessing game'
