@@ -12,8 +12,14 @@
     </div>
     
     <div class="chat-input">
-      <input v-model="newMessage" @keyup.enter="sendMessage" placeholder="Type your message...">
+            <input 
+        v-model="newMessage" 
+        @keyup.enter="sendMessage" 
+        placeholder="Type your message..."
+        maxlength="100"
+      >
       <button @click="sendMessage">Send</button>
+      <div class="char-counter">{{ newMessage.length }}/100</div>
     </div>
   </div>
 </template>
@@ -34,7 +40,7 @@ const formatTime = (timestamp) => {
 };
 
 const sendMessage = () => {
-  if (newMessage.value.trim()) {
+  if (newMessage.value.trim() && newMessage.value.length <= 100) {
     socket.emit('send_message', newMessage.value.trim());
     newMessage.value = '';
   }
@@ -79,6 +85,12 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+.char-counter {
+  font-size: 0.8em;
+  color: #666;
+  margin-top: 5px;
+}
+
 .chat-lobby {
   max-width: 600px;
   border: 1px solid #ccc;
@@ -112,6 +124,7 @@ onBeforeUnmount(() => {
 .chat-input {
   display: flex;
   gap: 10px;
+  flex-direction: column;
 }
 
 .chat-input input {
