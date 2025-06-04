@@ -108,23 +108,23 @@ onMounted(() => {
 }
 
 .logo {
-  max-width: 400px;
+  max-width: 280px;
   height: auto;
   display: block;
-  margin: 40px auto 40px auto;
+  margin: 20px auto 25px auto;
 }
 
 .game-interface {
   background-color: #f5ecc8bf;
   border-radius: 3px;
-  padding: 30px;
-  width: 500px;
-  min-height: 320px;
+  padding: 20px;
+  width: 380px;
+  min-height: 220px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  margin-bottom: auto;
+  margin-bottom: 25px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 12px;
 }
 
 .input-row {
@@ -166,10 +166,10 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   gap: 15px;
-  margin: 30px 0;
-  padding: 20px;
+  margin: 15px 0;
+  padding: 15px;
   border-radius: 3px;
-  height: 150px;
+  height: 120px;
 }
 
 .play-button {
@@ -177,16 +177,22 @@ onMounted(() => {
   color: white;
   border: none;
   border-radius: 3px;
-  padding: 16px 32px;
-  font-size: 24px;
+  padding: 12px 24px;
+  font-size: 18px;
   font-weight: 700;
   cursor: pointer;
   transition: background-color 0.3s ease;
   font-family: inherit;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+  align-self: center;
+  width: 100%;
 }
 
 .play-button:hover {
   background-color: #218838;
+  text-decoration: none;
 }
 
 .private-room-button {
@@ -196,10 +202,11 @@ onMounted(() => {
   border-radius: 3px;
   padding: 12px 24px;
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: background-color 0.3s ease;
   font-family: inherit;
+  width: 100%;
 }
 
 .private-room-button:hover {
@@ -209,7 +216,7 @@ onMounted(() => {
 .footer-sections {
   width: 100vw;
   background-color: #f5ecc8bf;
-  padding: 30px 0 15px 0;
+  padding: 25px 0 15px 0;
   margin-top: auto;
   display: flex;
   justify-content: center;
@@ -219,7 +226,7 @@ onMounted(() => {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: auto auto;
-  gap: 30px;
+  gap: 25px;
   max-width: 1200px;
   width: 100%;
   padding: 0 30px;
@@ -230,27 +237,27 @@ onMounted(() => {
   border-radius: 3px;
   padding: 15px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-  min-height: 120px;
+  min-height: 100px;
 }
 
 .footer-section h3 {
   color: #8B4513;
-  font-size: 20px;
-  margin-bottom: 12px;
+  font-size: 18px;
+  margin-bottom: 10px;
   font-weight: 900;
   text-align: center;
 }
 
 .footer-section h4 {
   color: #A0522D;
-  font-size: 15px;
-  margin-bottom: 8px;
+  font-size: 14px;
+  margin-bottom: 7px;
 }
 
 .footer-section p {
   color: #654321;
   line-height: 1.5;
-  margin-bottom: 8px;
+  margin-bottom: 7px;
   font-size: 13px;
 }
 
@@ -258,13 +265,13 @@ onMounted(() => {
   grid-column: 1 / -1;
   display: flex;
   justify-content: center;
-  gap: 40px;
+  gap: 35px;
 }
 
 .footer-link {
   color: #654321;
   text-decoration: none;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   transition: color 0.3s ease;
 }
@@ -272,6 +279,109 @@ onMounted(() => {
 .footer-link:hover {
   color: #8B4513;
   text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .home {
+    padding: 0 15px;
+  }
+  
+  .logo {
+    max-width: 280px;
+    margin: 20px auto 30px auto;
+  }
+  
+  .game-interface {
+    width: 100%;
+    max-width: 400px;
+    padding: 20px;
+    min-height: 280px;
+    gap: 15px;
+  }
+  
+  .input-row {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .name-input, .language-select {
+    font-size: 16px;
+    padding: 14px 16px;
+  }
+  
+  .avatar-selector {
+    margin: 20px 0;
+    height: 120px;
+    padding: 15px;
+  }
+  
+  .play-button, .private-room-button {
+    font-size: 16px;
+    padding: 14px 24px;
+  }
+  
+  .footer-content {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 0 15px;
+  }
+  
+  .footer-links {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .home {
+    padding: 0 10px;
+  }
+  
+  .logo {
+    max-width: 220px;
+    margin: 15px auto 20px auto;
+  }
+  
+  .game-interface {
+    padding: 15px;
+    min-height: 250px;
+    gap: 12px;
+  }
+  
+  .name-input, .language-select {
+    font-size: 14px;
+    padding: 12px 14px;
+  }
+  
+  .avatar-selector {
+    height: 100px;
+    margin: 15px 0;
+    padding: 10px;
+  }
+  
+  .play-button, .private-room-button {
+    font-size: 14px;
+    padding: 12px 20px;
+  }
+  
+  .footer-section {
+    padding: 12px;
+    min-height: 100px;
+  }
+  
+  .footer-section h3 {
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+  
+  .footer-section p {
+    font-size: 12px;
+  }
+  
+  .footer-link {
+    font-size: 13px;
+  }
 }
 
 @media (max-width: 768px) {
