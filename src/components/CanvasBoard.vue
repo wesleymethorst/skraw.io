@@ -21,7 +21,13 @@
         :class="{ active: color === currentColor }"
         @click="selectColor(color)"
       ></button>
-      <button class="clear-button" @click="clearCanvas">Clear</button>
+<button 
+  class="clear-button" 
+  @click="clearCanvas"
+  v-if="props.isCurrentDrawer"
+>
+  Clear
+</button>
     </div>
   </div>
 </template>
@@ -67,7 +73,8 @@ onMounted(() => {
   ctx.value.fillRect(0, 0, canvas.width, canvas.height);
    if (props.socket) {
     props.socket.on('draw', (data) => {
-      if (data.playerId !== props.socket.id) { // Pas dit ook aan
+      if (data.playerId !== props.socket.id) {
+        console.log(data)
         const ctx = canvasRef.value?.getContext('2d');
         if (!ctx) return;
 
@@ -135,7 +142,7 @@ function startDrawing(e) {
   ctx.value.stroke();
 
   // Stuur startpunt naar server
-  if (props.socket) {
+  if (props.socket && data.playerId !== props.socket.id) {
     props.socket.emit('draw', {
       type: 'start',
       x: offsetX,
@@ -203,6 +210,15 @@ function selectColor(color) {
 function clearCanvas() {
   ctx.value.fillStyle = '#FFFFFF';
   ctx.value.fillRect(0, 0, canvasRef.value.width, canvasRef.value.height);
+    if (props.socket) {
+    props.socket.emit('draw', {
+      type: 'draw',
+      x: offsetX,
+      y: offsetY,
+      color: currentColor.value,
+      lineWidth: lineWidth.value
+    });
+  }
 }
 </script>
 
