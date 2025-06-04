@@ -92,19 +92,17 @@ onMounted(() => {
   document.title = 'Skraw - Game Room';
   socket.value.emit('join_lobby', { name: playerName.value, avatar: '' });
 
-socket.value.on('game_started', (data) => {
-  alert('start')
-  console.log('Game started. Tekenaar is:', data.drawer)
+socket.value.on('correct_guess', (data) => {
   isCurrentDrawer.value = false
-  // Geen toegang tot het woord hier!
-})
-
+});
 socket.value.on('your_word', (data) => {
-   console.log('word:', data)
-   alert(data)
   currentWord.value = data.word;
   isCurrentDrawer.value = true
 });
+
+socket.value.on('game_started', (data) => {
+  isCurrentDrawer.value = false
+})
 
 socket.value.on('player_ready_update', (data) => {
     const playerIndex = players.value.findIndex(p => p.id === data.playerId);
@@ -125,12 +123,10 @@ socket.value.on('player_ready_update', (data) => {
   });
 
   socket.value.on('player_joined', (data) => {
-    console.log(data)
     players.value = data.players;
   });
 
   socket.value.on('player_left', (data) => {
-    console.log(data)
     players.value = data.players;
   });
 });
