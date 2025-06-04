@@ -1,18 +1,17 @@
 <template>
-  <h2>Lobby: {{ lobbyId }} ({{ players }}/{{ maxPlayers }} players)</h2>
   <div class="chat-lobby">
-
+    <h2>Lobby: {{ lobbyId }} ({{ playerCount }}/{{ maxPlayers }} players)</h2>
     
     <div class="chat-messages">
-      <div v-for="message in messages" :key="message.id" class="message">
-        <strong>Player {{ message.playerId.slice(0, 4) }}:</strong>
+      <div v-for="message in messages" :key="message.id" class="message" :class="{'system-message': message.playerId === 'system'}">
+        <strong v-if="message.playerId !== 'system'">{{ message.playerName || 'Player '+message.playerId.slice(0, 4) }}:</strong>
         {{ message.text }}
         <small>{{ formatTime(message.timestamp) }}</small>
       </div>
     </div>
     
     <div class="chat-input">
-            <input 
+      <input 
         v-model="newMessage" 
         @keyup.enter="sendMessage" 
         placeholder="Type your message..."
@@ -21,18 +20,22 @@
       <button @click="sendMessage">Send</button>
       <div class="char-counter">{{ newMessage.length }}/100</div>
     </div>
+    <div class="ai-box">AI Guess</div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue';
-import { io } from 'socket.io-client';
 
-const socket = io('http://localhost:3000');
-const lobbyId = ref('');
-const players = ref(0);
-const maxPlayers = ref(4);
-const messages = ref([]);
+const props = defineProps({
+  socket: Object,
+  lobbyData: Object
+});
+
+const lobbyId = ref(props.lobbyData?.lobbyId || '');
+const playerCount = ref(props.lobbyData?.playerCount || 0);
+const maxPlayers = ref(props.lobbyData?.maxPlayers || 4);
+const messages = ref(props.lobbyData?.messages || []);
 const newMessage = ref('');
 
 const formatTime = (timestamp) => {
@@ -41,94 +44,105 @@ const formatTime = (timestamp) => {
 
 const sendMessage = () => {
   if (newMessage.value.trim() && newMessage.value.length <= 100) {
-    socket.emit('send_message', newMessage.value.trim());
+    props.socket.emit('send_message', {
+      text: newMessage.value.trim(),
+      lobbyId: lobbyId.value
+    });
     newMessage.value = '';
   }
 };
 
 onMounted(() => {
-  socket.on('lobby_assigned', (data) => {
+  if (!props.socket) return;
+
+  props.socket.on('lobby_assigned', (data) => {
     lobbyId.value = data.lobbyId;
-    players.value = data.players;
+    playerCount.value = data.playerCount;
     maxPlayers.value = data.maxPlayers;
-    messages.value = data.messages;
+    messages.value = data.messages || [];
   });
 
-  socket.on('player_joined', (data) => {
-    players.value = data.players;
+  props.socket.on('player_joined', (data) => {
+    playerCount.value = data.playerCount;
     messages.value.push({
       id: Date.now(),
       playerId: 'system',
-      text: `New player joined (${data.players}/${maxPlayers.value})`,
+      text: `Player ${data.player.name} joined (${data.playerCount}/${maxPlayers.value})`,
       timestamp: new Date().toISOString()
     });
   });
 
-  socket.on('player_left', (data) => {
-    players.value = data.players;
+  props.socket.on('player_left', (data) => {
+    playerCount.value = data.playerCount;
     messages.value.push({
       id: Date.now(),
       playerId: 'system',
-      text: `Player left (${data.players}/${maxPlayers.value})`,
+      text: `Player left (${data.playerCount}/${maxPlayers.value})`,
       timestamp: new Date().toISOString()
     });
   });
 
-  socket.on('new_message', (message) => {
+  props.socket.on('new_message', (message) => {
+    console.log(message)
     messages.value.push(message);
   });
 });
 
 onBeforeUnmount(() => {
-  socket.disconnect();
+  if (!props.socket) return;
+  
+  props.socket.off('lobby_assigned');
+  props.socket.off('player_joined');
+  props.socket.off('player_left');
+  props.socket.off('new_message');
 });
 </script>
 
 <style scoped>
-.char-counter {
-  font-size: 0.8em;
-  color: #666;
-  margin-top: 5px;
-}
-
+/* Behoud dezelfde styles als voorheen */
 .chat-lobby {
-  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   border: 1px solid #ccc;
   border-radius: 8px;
+  padding: 10px;
 }
 
 .chat-messages {
-  height: 300px;
+  flex: 1;
   overflow-y: auto;
-  margin-bottom: 20px;
+  margin: 10px 0;
   padding: 10px;
   border: 1px solid #eee;
   border-radius: 4px;
-  display: flex;
-  flex-direction: column-reverse;
+  background: #f9f9f9;
 }
 
 .message {
-  display: flex;
-  flex-direction: column;
   margin-bottom: 10px;
   padding: 5px;
   border-bottom: 1px solid #f0f0f0;
 }
 
-.message small {
+.message.system-message {
   color: #666;
-  margin-left: 10px;
+  font-style: italic;
+}
+
+.message small {
+  color: #999;
+  margin-left: 8px;
+  font-size: 0.8em;
 }
 
 .chat-input {
   display: flex;
-  gap: 10px;
   flex-direction: column;
+  gap: 5px;
 }
 
 .chat-input input {
-  flex-grow: 1;
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 4px;
@@ -141,5 +155,11 @@ onBeforeUnmount(() => {
   border: none;
   border-radius: 4px;
   cursor: pointer;
+}
+
+.char-counter {
+  font-size: 0.8em;
+  color: #666;
+  text-align: right;
 }
 </style>

@@ -27,7 +27,7 @@
       </div>
       
       <!-- Play buttons -->
-        <a 
+      <a 
         :href="`/game?name=${encodeURIComponent(playerName)}&lang=${selectedLanguage}`" 
         class="play-button"
         @click.prevent="playGame"

@@ -1,20 +1,30 @@
 <template>
   <div class="layout">
     <aside class="sidebar">
-      <PlayerList />
+           <PlayerList 
+        :maxPlayers="maxPlayers" 
+        :players="players" 
+        :yourId="socket?.id" 
+        :socket="socket" 
+      />
     </aside>
 
     <div class="main-content">
       <header class="topbar">
         <h1>Skraw.io</h1>
         <div class="top-info">
+          <span v-if="currentWord">Your word: {{ currentWord }}</span>
           <span>Guess:   _</span>
           <span>Timer: 60s</span>
         </div>
       </header>
 
       <section class="canvas-container">
-        <CanvasBoard @color-change="currentColor = $event" />
+        <CanvasBoard 
+        :socket="socket" 
+  @color-change="currentColor = $event" 
+  :isCurrentDrawer="isCurrentDrawer"
+/>
       </section>
 
       <footer class="bottombar">
@@ -24,22 +34,105 @@
     </div>
 
     <aside class="rightbar">
-      <ChatLobby></ChatLobby>
-      <div class="ai-box">AI Guess</div>
+           <ChatLobby :socket="socket" :lobbyData="{ lobbyId, playerCount: players.length, maxPlayers, messages: [] }" />
+      
     </aside>
   </div>
 </template>
 
 <script setup>
 import ChatLobby from '../components/ChatLobby.vue';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import PlayerList from '../components/PlayerList.vue';
 import CanvasBoard from '../components/CanvasBoard.vue';
+import { io } from 'socket.io-client';
+import { useRoute } from 'vue-router';
 
+const playerName = ref('');
+const players = ref([]);
 const currentColor = ref('#000000');
+const lobbyId = ref('');
+const maxPlayers = ref(4);
+const socket = ref(io('http://localhost:3000'));
+const currentWord = ref('');
+const isCurrentDrawer = ref(false);
+const route = useRoute();
+playerName.value = route.query.name || '';
+
+function redrawCanvas(dataArray) {
+  if (!ctx.value || !canvasRef.value) return;
+
+  // Maak het canvas eerst schoon
+  ctx.value.fillStyle = '#FFFFFF';
+  ctx.value.fillRect(0, 0, canvasRef.value.width, canvasRef.value.height);
+
+  // Herteken alle lijnen
+  dataArray.forEach(data => {
+    if (data.type === 'start') {
+      // Begin een nieuw pad
+      ctx.value.beginPath();
+      ctx.value.moveTo(data.x, data.y);
+      ctx.value.lineTo(data.x, data.y);
+      ctx.value.strokeStyle = data.color;
+      ctx.value.lineWidth = data.lineWidth;
+      ctx.value.lineCap = 'round';
+      ctx.value.stroke();
+    } 
+    else if (data.type === 'draw') {
+      // Voeg een lijn toe
+      ctx.value.lineTo(data.x, data.y);
+      ctx.value.strokeStyle = data.color;
+      ctx.value.lineWidth = data.lineWidth;
+      ctx.value.stroke();
+    }
+  });
+}
 
 onMounted(() => {
   document.title = 'Skraw - Game Room';
+  socket.value.emit('join_lobby', { name: playerName.value, avatar: '' });
+
+socket.value.on('game_started', (data) => {
+  alert('start')
+  console.log('Game started. Tekenaar is:', data.drawer)
+  isCurrentDrawer.value = false
+  // Geen toegang tot het woord hier!
+})
+
+socket.value.on('your_word', (data) => {
+   console.log('word:', data)
+   alert(data)
+  currentWord.value = data.word;
+  isCurrentDrawer.value = true
+});
+
+socket.value.on('player_ready_update', (data) => {
+    const playerIndex = players.value.findIndex(p => p.id === data.playerId);
+    if (playerIndex !== -1) {
+      players.value[playerIndex].isReady = data.isReady;
+      players.value = [...players.value]; // Forceer reactiviteit
+    }
+  });
+
+  socket.value.on('lobby_assigned', (data) => {
+    lobbyId.value = data.lobbyId;
+    players.value = data.players;
+    maxPlayers.value = data.maxPlayers;
+      if (data.drawingData) {
+    redrawCanvas(data.drawingData);
+  }
+    console.log(data)
+  });
+
+  socket.value.on('player_joined', (data) => {
+    console.log(data)
+    players.value = data.players;
+  });
+
+  socket.value.on('player_left', (data) => {
+    console.log(data)
+    players.value = data.players;
+  });
 });
 </script>
 
@@ -54,7 +147,7 @@ html, body, #app {
 
 .layout {
   display: grid;
-  grid-template-columns: 100px 1fr 300px;
+  grid-template-columns: 250px 1fr 300px;
   grid-template-rows: 50px auto 40px;
   grid-template-areas:
     "sidebar topbar rightbar"

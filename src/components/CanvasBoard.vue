@@ -6,8 +6,8 @@
       @mousemove="draw"
       @mouseup="stopDrawing"
       @mouseleave="stopDrawing"
-      @touchstart="startDrawing"
-      @touchmove="draw"
+      @touchstart="handleTouchStart"
+      @touchmove="handleTouchMove"
       @touchend="stopDrawing"
       class="drawing-canvas"
     ></canvas>
@@ -27,7 +27,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted } from 'vue';
+
+const props = defineProps({
+  isCurrentDrawer: Boolean,
+  socket: Object // Voeg deze prop toe
+});
 
 const emit = defineEmits(['color-change']);
 const canvasRef = ref(null);
@@ -57,79 +62,137 @@ onMounted(() => {
   const canvas = canvasRef.value;
   ctx.value = canvas.getContext('2d');
   
-  // Set canvas size to fill the container while maintaining aspect ratio
-  resizeCanvas();
-  window.addEventListener('resize', resizeCanvas);
-  
   // Fill with white background
   ctx.value.fillStyle = '#FFFFFF';
   ctx.value.fillRect(0, 0, canvas.width, canvas.height);
+   if (props.socket) {
+    props.socket.on('draw', (data) => {
+      if (data.playerId !== props.socket.id) { // Pas dit ook aan
+        const ctx = canvasRef.value?.getContext('2d');
+        if (!ctx) return;
+
+        if (data.type === 'start') {
+          ctx.beginPath();
+          ctx.moveTo(data.x, data.y);
+          ctx.lineTo(data.x, data.y);
+          ctx.strokeStyle = data.color;
+          ctx.lineWidth = data.lineWidth;
+          ctx.lineCap = 'round';
+          ctx.stroke();
+        } 
+        else if (data.type === 'draw') {
+          ctx.lineTo(data.x, data.y);
+          ctx.strokeStyle = data.color;
+          ctx.lineWidth = data.lineWidth;
+          ctx.stroke();
+        }
+      }
+    });
+  }
 });
 
-function resizeCanvas() {
+function getCanvasCoordinates(e) {
   const canvas = canvasRef.value;
-  const container = canvas.parentElement;
+  const rect = canvas.getBoundingClientRect();
   
-  // Get the dimensions of the container
-  const containerWidth = container.clientWidth;
-  const containerHeight = container.clientHeight;
+  // Calculate scale factors
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
   
-  // Determine the size to fit within the container while maintaining aspect ratio
-  const size = Math.min(containerWidth - 40, containerHeight - 40);
-  
-  canvas.width = size;
-  canvas.height = size;
-  
-  // Refill with white after resize
-  if (ctx.value) {
-    ctx.value.fillStyle = '#FFFFFF';
-    ctx.value.fillRect(0, 0, canvas.width, canvas.height);
+  // Get client coordinates
+  let clientX, clientY;
+  if (e.type.includes('touch')) {
+    const touch = e.touches[0] || e.changedTouches[0];
+    clientX = touch.clientX;
+    clientY = touch.clientY;
+  } else {
+    clientX = e.clientX;
+    clientY = e.clientY;
   }
+  
+  // Return scaled coordinates
+  return {
+    offsetX: (clientX - rect.left) * scaleX,
+    offsetY: (clientY - rect.top) * scaleY
+  };
 }
 
 function startDrawing(e) {
+  if (!props.isCurrentDrawer) return;
+  
   isDrawing.value = true;
-  const { offsetX, offsetY } = getCoordinates(e);
+  const { offsetX, offsetY } = getCanvasCoordinates(e);
   lastX.value = offsetX;
   lastY.value = offsetY;
-}
 
-function draw(e) {
-  if (!isDrawing.value) return;
-  
-  const { offsetX, offsetY } = getCoordinates(e);
-  
+  // Start new path
   ctx.value.beginPath();
-  ctx.value.moveTo(lastX.value, lastY.value);
+  ctx.value.moveTo(offsetX, offsetY);
   ctx.value.lineTo(offsetX, offsetY);
   ctx.value.strokeStyle = currentColor.value;
   ctx.value.lineWidth = lineWidth.value;
   ctx.value.lineCap = 'round';
   ctx.value.stroke();
+
+  // Stuur startpunt naar server
+  if (props.socket) {
+    props.socket.emit('draw', {
+      type: 'start',
+      x: offsetX,
+      y: offsetY,
+      color: currentColor.value,
+      lineWidth: lineWidth.value
+    });
+  }
+}
+
+function draw(e) {
+  if (!isDrawing.value || !props.isCurrentDrawer) return;
+  
+  const { offsetX, offsetY } = getCanvasCoordinates(e);
+  
+  ctx.value.lineTo(offsetX, offsetY);
+  ctx.value.strokeStyle = currentColor.value;
+  ctx.value.lineWidth = lineWidth.value;
+  ctx.value.stroke();
+  
+  // Stuur lijn naar server
+  if (props.socket) {
+    props.socket.emit('draw', {
+      type: 'draw',
+      x: offsetX,
+      y: offsetY,
+      color: currentColor.value,
+      lineWidth: lineWidth.value
+    });
+  }
   
   lastX.value = offsetX;
   lastY.value = offsetY;
 }
 
-function stopDrawing() {
-  isDrawing.value = false;
+function handleTouchStart(e) {
+  e.preventDefault();
+  const touch = e.touches[0];
+  const mouseEvent = new MouseEvent('mousedown', {
+    clientX: touch.clientX,
+    clientY: touch.clientY
+  });
+  startDrawing(mouseEvent);
 }
 
-function getCoordinates(e) {
-  // Handle both mouse and touch events
-  if (e.type.includes('touch')) {
-    const rect = e.target.getBoundingClientRect();
-    const touch = e.touches[0] || e.changedTouches[0];
-    return {
-      offsetX: touch.clientX - rect.left,
-      offsetY: touch.clientY - rect.top
-    };
-  } else {
-    return {
-      offsetX: e.offsetX,
-      offsetY: e.offsetY
-    };
-  }
+function handleTouchMove(e) {
+  e.preventDefault();
+  const touch = e.touches[0];
+  const mouseEvent = new MouseEvent('mousemove', {
+    clientX: touch.clientX,
+    clientY: touch.clientY
+  });
+  draw(mouseEvent);
+}
+
+function stopDrawing() {
+  isDrawing.value = false;
 }
 
 function selectColor(color) {
@@ -160,6 +223,8 @@ function clearCanvas() {
   background-color: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   touch-action: none;
+  width: 100%;
+  height: 100%;
 }
 
 .color-palette {
