@@ -36,7 +36,7 @@ class Player {
   constructor (socketId, playerData) {
     this.id = socketId
     this.name = playerData.name || 'Anonymous_' + socketId
-    this.avatar = playerData.avatar || 'default_avatar.png'
+    this.character = playerData.character || 'blue_smug_wide'
     this.score = 0
     this.isReady = false
     this.isDrawing = false
@@ -107,7 +107,7 @@ class Lobby {
     return Array.from(this.players.values()).map(player => ({
       id: player.id,
       name: player.name,
-      avatar: player.avatar,
+      character: player.character,
       score: player.score,
       isReady: player.isReady,
       isDrawing: player.isDrawing
@@ -191,7 +191,6 @@ class GameServer {
 
   setupSocketHandlers () {
     this.io.on('connection', socket => {
-      console.log(`User connected: ${socket.id}`)
 
       let currentLobby = null
 
@@ -207,6 +206,7 @@ class GameServer {
       })
 
       socket.on('join_lobby', playerData => {
+        
         if (currentLobby) {
           socket.emit('error', { message: 'You are already in a lobby' })
           return
@@ -216,11 +216,14 @@ class GameServer {
         currentLobby = lobby
 
         const player = lobby.addPlayer(socket.id, playerData)
+        
         socket.join(lobby.id)
+
+        const playersData = lobby.getPlayersData();
 
         socket.emit('lobby_assigned', {
           lobbyId: lobby.id,
-          players: lobby.getPlayersData(),
+          players: playersData,
           yourPlayer: player,
           playerCount: lobby.getPlayerCount(),
           maxPlayers: lobby.MAX_PLAYERS,
@@ -322,7 +325,6 @@ class GameServer {
       })
 
       socket.on('disconnect', () => {
-        console.log(`User disconnected: ${socket.id}`)
 
         if (currentLobby) {
           // Verwijder speler eerst uit de lobby
@@ -331,14 +333,13 @@ class GameServer {
           // Stuur update naar alle clients in de lobby
           this.io.to(currentLobby.id).emit('player_left', {
             playerId: socket.id,
-            players: currentLobby.getPlayersData(), // Gebruik currentLobby in plaats van lobby
+            players: currentLobby.getPlayersData(),
             playerCount: currentLobby.getPlayerCount()
           })
 
           // Verwijder lobby als deze leeg is
           if (currentLobby.getPlayerCount() === 0) {
             this.lobbies.delete(currentLobby.id)
-            console.log(`Lobby ${currentLobby.id} removed (empty)`)
           }
         }
       })

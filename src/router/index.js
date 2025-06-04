@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../pages/Home.vue'
 import Game from '../pages/Game.vue'
-import Chat from '../pages/Chat.vue'
 
 const routes = [
   {
@@ -9,7 +8,7 @@ const routes = [
     name: 'Home',
     component: Home,
     meta: {
-      title: 'Skraw - Home'
+      title: 'Skraw.io - Free multiplayer sketching, drawing & guessing game'
     }
   },
   {
@@ -17,15 +16,7 @@ const routes = [
     name: 'Game',
     component: Game,
     meta: {
-      title: 'Skraw - Game Room'
-    }
-  },
-  {
-    path: '/chat',
-    name: 'Chat',
-    component: Chat,
-    meta: {
-      title: 'Skraw - Game Room'
+      title: 'Skraw.io - Game Room'
     }
   }
 ]
@@ -35,10 +26,8 @@ const router = createRouter({
   routes
 })
 
-// Navigation Guard to change the title
 router.beforeEach((to, from, next) => {
-  // Set default title or get from meta
-  document.title = to.meta.title || 'Skraw - Free multiplayer sketching, drawing & guessing game'
+  document.title = to.meta.title || 'Skraw.io - Free multiplayer sketching, drawing & guessing game'
   next()
 })
 

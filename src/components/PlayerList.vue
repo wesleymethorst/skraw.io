@@ -1,31 +1,52 @@
 <template>
-  <div class="player-list-container">
-    <h3 class="list-title">
-      Players <span class="player-count">{{ players.length }}/{{ maxPlayers }}</span>
+  <div class="bg-white/90 rounded-lg p-4 border-2 border-[#d4c19c] shadow-[0_2px_10px_rgba(0,0,0,0.2)] max-w-[280px] font-comic">
+    <h3 class="text-[#8B4513] text-lg m-0 mb-4 flex items-center justify-between font-black">
+      Players 
+      <span class="bg-[#f5ecc8d9] px-2 py-1 rounded-lg text-sm border border-[#d4c19c] shadow-sm">{{ players.length }}/{{ maxPlayers }}</span>
     </h3>
-    <div class="player-scroll-container">
+    
+    <div class="max-h-[320px] overflow-y-auto pr-2 space-y-2">
       <div 
         v-for="player in players" 
         :key="player.id" 
-        class="player-item"
-        :class="{ 'is-ready': player.isReady, 'is-you': player.id === yourId }"
+        class="flex items-center gap-3 p-3 bg-[#f5ecc8bf] border-2 border-[#d4c19c] rounded-lg transition-all duration-200 relative"
+        :class="{ 
+          'bg-green-50 border-green-400': player.isReady,
+        }"
       >
-        <div class="player-avatar">
-          <span class="avatar-initial">{{ getInitial(player.name) }}</span>
+        <!-- Character Avatar -->
+        <div class="w-10 h-10 rounded-lg bg-white flex items-center justify-center flex-shrink-0 shadow-md overflow-hidden">
+          <img 
+            :src="getCharacterImagePath(player.character)"
+            :alt="`Character for ${player.name}`"
+            class="w-8 h-8 object-contain"
+          />
         </div>
-        <span class="player-name">{{ player.name }}</span>
-        <span v-if="player.isReady" class="ready-indicator">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </span>
-        <button 
-          v-if="!player.isReady && player.id === yourId" 
-          @click="toggleReady" 
-          class="ready-button"
-        >
-          Ready Up
-        </button>
+        
+        <!-- Player Info -->
+        <div class="flex-grow min-w-0">
+          <div class="font-bold text-[#654321] text-sm whitespace-nowrap overflow-hidden text-ellipsis">
+            {{ player.name }}
+            <span v-if="player.id === yourId" class="text-[#8B4513] text-xs">(You)</span>
+          </div>
+          <div class="text-xs">
+            <span v-if="player.isReady" class="text-green-700 font-bold">Ready</span>
+            <span v-else class="text-amber-600 font-bold">Waiting</span>
+          </div>
+        </div>
+        
+        <!-- Ready Button/Status -->
+        <div class="ml-auto flex items-center">
+          <button 
+            v-if="!player.isReady && player.id === yourId" 
+            @click="toggleReady" 
+            class="px-3 py-1.5 bg-gradient-to-br from-green-600 to-green-700 text-white border-none rounded-md cursor-pointer text-xs font-bold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:from-green-700 hover:to-green-800 active:translate-y-0"
+          >
+            Ready Up!
+          </button>
+          <div v-else-if="player.isReady" class="w-3 h-3 bg-green-500 rounded-full border-2 border-green-600 shadow-sm"></div>
+          <div v-else class="w-3 h-3 bg-amber-400 rounded-full border-2 border-amber-500 shadow-sm animate-pulse"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -60,140 +81,44 @@ const toggleReady = () => {
 const getInitial = (name) => {
   return name.charAt(0).toUpperCase();
 };
+
+const getCharacterImagePath = (character) => {
+  
+  try {
+    const characterToUse = character || 'blue_smug_wide';
+    const path = new URL(`../assets/characters/character_${characterToUse}.png`, import.meta.url).href;
+    return path;
+  } catch (error) {
+    console.error('❌ Failed to generate character image path:', character, error);
+    return new URL(`../assets/characters/character_blue_smug_wide.png`, import.meta.url).href;
+  }
+};
+
 </script>
 
 <style scoped>
-.player-list-container {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  padding: 16px;
-  backdrop-filter: blur(5px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  max-width: 280px;
+@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap');
+
+.font-comic {
+  font-family: 'Comic Neue', sans-serif;
 }
 
-.list-title {
-  color: #fff;
-  font-size: 1.1rem;
-  margin: 0 0 16px 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-weight: 600;
+/* Custom scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
 }
 
-.player-count {
-  background: rgba(255, 255, 255, 0.1);
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 0.9rem;
+::-webkit-scrollbar-track {
+  background: rgba(245, 236, 200, 0.3);
+  border-radius: 3px;
 }
 
-.player-scroll-container {
-  max-height: 300px;
-  overflow-y: auto;
-  padding-right: 8px;
+::-webkit-scrollbar-thumb {
+  background: #d4c19c;
+  border-radius: 3px;
 }
 
-/* Scrollbar styling */
-.player-scroll-container::-webkit-scrollbar {
-  width: 4px;
-}
-
-.player-scroll-container::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 2px;
-}
-
-.player-scroll-container::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 2px;
-}
-
-.player-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  background-color: rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  margin-bottom: 8px;
-  transition: all 0.2s ease;
-  position: relative;
-}
-
-.player-item:last-child {
-  margin-bottom: 0;
-}
-
-.player-item:hover {
-  background-color: rgba(255, 255, 255, 0.12);
-  transform: translateY(-1px);
-}
-
-.player-item.is-ready {
-  background-color: rgba(66, 185, 131, 0.15);
-}
-
-.player-item.is-you {
-  border-left: 5px solid #42b983;
-}
-
-.player-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #42b983, #33a06f);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  font-weight: 600;
-  color: white;
-}
-
-.avatar-initial {
-  font-size: 0.9rem;
-}
-
-.player-name {
-  color: #fff;
-  font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  flex-grow: 1;
-}
-
-.ready-indicator {
-  color: #42b983;
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-}
-
-.ready-button {
-  margin-left: auto;
-  padding: 6px 12px;
-  background: linear-gradient(135deg, #42b983, #33a06f);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.8rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.ready-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.ready-button:active {
-  transform: translateY(0);
+::-webkit-scrollbar-thumb:hover {
+  background: #8B4513;
 }
 </style>

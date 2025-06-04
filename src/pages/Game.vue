@@ -1,42 +1,95 @@
 <template>
-  <div class="layout">
-    <aside class="sidebar">
-           <PlayerList 
-        :maxPlayers="maxPlayers" 
-        :players="players" 
-        :yourId="socket?.id" 
-        :socket="socket" 
-      />
-    </aside>
-
-    <div class="main-content">
-      <header class="topbar">
-        <h1>Skraw.io</h1>
-        <div class="top-info">
-          <span v-if="currentWord">Your word: {{ currentWord }}</span>
-          <span>Guess:   _</span>
-          <span>Timer: 60s</span>
+  <div class="game-page">
+    <div class="grid grid-cols-[280px_1fr_320px] grid-rows-[60px_auto_50px] h-screen w-screen box-border overflow-hidden font-comic" style="grid-template-areas: 'sidebar topbar rightbar' 'sidebar canvas rightbar' 'sidebar bottombar rightbar';">
+      <!-- Sidebar -->
+      <aside class="bg-[#f5ecc8d9] shadow-[0_4px_20px_rgba(0,0,0,0.3)] flex flex-col p-4 text-sm gap-3 overflow-y-auto border-r-2 border-[#d4c19c]" style="grid-area: sidebar;">
+        <div class="text-center mb-2">
+          <h2 class="text-[#8B4513] text-lg font-black">Players</h2>
         </div>
-      </header>
+        <PlayerList 
+          :maxPlayers="maxPlayers" 
+          :players="players" 
+          :character="character"
+          :yourId="socket?.id" 
+          :socket="socket" 
+        />
+      </aside>
 
-      <section class="canvas-container">
-        <CanvasBoard 
-        :socket="socket" 
-  @color-change="currentColor = $event" 
-  :isCurrentDrawer="isCurrentDrawer"
-/>
-      </section>
+      <div class="contents">
+        <!-- Top bar -->
+        <header class="bg-[#f5ecc8bf] shadow-[0_2px_10px_rgba(0,0,0,0.2)] flex justify-between items-center px-6 text-sm border-b-2 border-[#d4c19c]" style="grid-area: topbar;">
+          <div class="flex items-center gap-4">
+            <img 
+              src="../assets/skrawio_logo_transparant3.png" 
+              alt="Skraw.io Logo" 
+              class="h-10 w-auto" 
+            />
+            <h1 class="text-[#8B4513] text-xl font-black">Game Room</h1>
+          </div>
+          <div class="flex gap-6 text-sm">
+            <div class="bg-[#f5ecc8d9] px-3 py-1.5 rounded-md border border-[#d4c19c] shadow-sm">
+              <span v-if="currentWord" class="text-[#654321] font-bold">Your word: <span class="text-[#8B4513]">{{ currentWord }}</span></span>
+              <span v-else class="text-[#654321] font-bold">Current word: _ _ _ _ _</span>
+            </div>
+            <div class="bg-[#f5ecc8d9] px-3 py-1.5 rounded-md border border-[#d4c19c] shadow-sm">
+              <span class="text-[#654321] font-bold">Guess: <span class="text-[#A0522D]">_ _ _</span></span>
+            </div>
+            <div class="bg-[#f5ecc8d9] px-3 py-1.5 rounded-md border border-[#d4c19c] shadow-sm">
+              <span class="text-[#654321] font-bold">Timer: <span class="text-[#8B4513]">60s</span></span>
+            </div>
+          </div>
+        </header>
 
-      <footer class="bottombar">
-        <span>Current Color:</span>
-        <div class="color-indicator" :style="{ backgroundColor: currentColor }"></div>
-      </footer>
+        <!-- Canvas area -->
+        <section class="bg-white shadow-inner flex flex-col justify-start items-center flex-grow min-h-0 overflow-hidden border-4 border-[#d4c19c] m-2 rounded-lg relative" style="grid-area: canvas;">
+          <!-- Canvas overlay for non-drawers - moved to top -->
+          <div v-if="!isCurrentDrawer" class="absolute top-4 left-1/2 transform -translate-x-1/2 z-10">
+            <div class="bg-[#f5ecc8bf] px-6 py-3 rounded-lg shadow-lg border-2 border-[#d4c19c]">
+              <p class="text-[#8B4513] font-bold text-lg">Guess what's being drawn!</p>
+            </div>
+          </div>
+          
+          <div class="w-full h-full relative">
+            <CanvasBoard 
+              :socket="socket" 
+              @color-change="currentColor = $event" 
+              :isCurrentDrawer="isCurrentDrawer"
+              class="w-full h-full"
+            />
+          </div>
+        </section>
+
+        <!-- Bottom bar -->
+        <footer class="bg-[#f5ecc8bf] shadow-[0_-2px_10px_rgba(0,0,0,0.2)] flex items-center justify-between px-6 gap-4 text-sm border-t-2 border-[#d4c19c]" style="grid-area: bottombar;">
+          <div class="flex items-center gap-3">
+            <span class="text-[#654321] font-bold">Current Color:</span>
+            <div class="w-6 h-6 rounded-full border-2 border-[#8B4513] shadow-sm" :style="{ backgroundColor: currentColor }"></div>
+          </div>
+          
+          <div class="flex items-center gap-4">
+            <div class="bg-[#f5ecc8d9] px-3 py-1.5 rounded-md border border-[#d4c19c] shadow-sm">
+              <span class="text-[#654321] font-bold">Round: <span class="text-[#8B4513]">1/3</span></span>
+            </div>
+            <div class="bg-[#f5ecc8d9] px-3 py-1.5 rounded-md border border-[#d4c19c] shadow-sm">
+              <span class="text-[#654321] font-bold">Score: <span class="text-[#A0522D]">0</span></span>
+            </div>
+          </div>
+        </footer>
+      </div>
+
+      <!-- Right sidebar (Chat) -->
+      <aside class="bg-[#f5ecc8d9] shadow-[0_4px_20px_rgba(0,0,0,0.3)] flex flex-col p-4 gap-3 overflow-hidden border-l-2 border-[#d4c19c]" style="grid-area: rightbar;">
+        <div class="text-center mb-2">
+          <h2 class="text-[#8B4513] text-lg font-black">Chat & Guesses</h2>
+        </div>
+        <div class="flex-1 min-h-0">
+          <ChatLobby 
+            :socket="socket" 
+            :lobbyData="{ lobbyId, playerCount: players.length, maxPlayers, messages: [] }" 
+          />
+        </div>
+      </aside>
     </div>
-
-    <aside class="rightbar">
-           <ChatLobby :socket="socket" :lobbyData="{ lobbyId, playerCount: players.length, maxPlayers, messages: [] }" />
-      
-    </aside>
   </div>
 </template>
 
@@ -53,11 +106,13 @@ const players = ref([]);
 const currentColor = ref('#000000');
 const lobbyId = ref('');
 const maxPlayers = ref(4);
+const character = ref('');
 const socket = ref(io('http://localhost:3000'));
 const currentWord = ref('');
 const isCurrentDrawer = ref(false);
 const route = useRoute();
 playerName.value = route.query.name || '';
+character.value = route.query.character || 'blue_smug_wide';
 
 function redrawCanvas(dataArray) {
   if (!ctx.value || !canvasRef.value) return;
@@ -89,11 +144,10 @@ function redrawCanvas(dataArray) {
 }
 
 onMounted(() => {
-  document.title = 'Skraw - Game Room';
-  socket.value.emit('join_lobby', { name: playerName.value, avatar: '' });
+  socket.value.emit('join_lobby', { name: playerName.value, character: character.value });
 
 socket.value.on('correct_guess', (data) => {
-  isCurrentDrawer.value = false
+  isCurrentDrawer.value = falsex
 });
 socket.value.on('your_word', (data) => {
   currentWord.value = data.word;
@@ -108,18 +162,19 @@ socket.value.on('player_ready_update', (data) => {
     const playerIndex = players.value.findIndex(p => p.id === data.playerId);
     if (playerIndex !== -1) {
       players.value[playerIndex].isReady = data.isReady;
-      players.value = [...players.value]; // Forceer reactiviteit
+      players.value = [...players.value];
     }
   });
 
   socket.value.on('lobby_assigned', (data) => {
+    
     lobbyId.value = data.lobbyId;
     players.value = data.players;
     maxPlayers.value = data.maxPlayers;
-      if (data.drawingData) {
-    redrawCanvas(data.drawingData);
-  }
-    console.log(data)
+    
+    if (data.drawingData) {
+      redrawCanvas(data.drawingData);
+    }
   });
 
   socket.value.on('player_joined', (data) => {
@@ -133,112 +188,72 @@ socket.value.on('player_ready_update', (data) => {
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap');
+
+.game-page {
+  width: 100vw;
+  height: 100vh;
+  max-height: 100vh;
+  background-image: url('../assets/skraw_background_1920x1080.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  overflow: hidden;
+  font-family: 'Comic Neue', sans-serif;
+}
+
+.font-comic {
+  font-family: 'Comic Neue', sans-serif;
+}
+
+/* Custom heights for specific areas */
+.h-12\.5 {
+  height: 50px;
+}
+
+/* Reset styles for full screen layout */
 html, body, #app {
   margin: 0;
   padding: 0;
   height: 100%;
   overflow: hidden;
-  font-family: sans-serif;
 }
 
-.layout {
-  display: grid;
-  grid-template-columns: 250px 1fr 300px;
-  grid-template-rows: 50px auto 40px;
-  grid-template-areas:
-    "sidebar topbar rightbar"
-    "sidebar canvas rightbar"
-    "sidebar bottombar rightbar";
-  height: 100vh;
-  width: 100vw;
-  box-sizing: border-box;
-  overflow: hidden;
-}
-
-.sidebar {
-  grid-area: sidebar;
-  background-color: #007bff;
-  color: white;
-  display: flex;
-  flex-direction: column;
-  padding: 8px;
-  font-size: 13px;
-  gap: 6px;
-  overflow-y: auto;
-}
-
-.topbar {
-  grid-area: topbar;
-  background-color: #bbd6ff;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 12px;
-  font-size: 14px;
-  height: 50px;
-}
-
-.top-info {
-  display: flex;
-  gap: 20px;
-  font-size: 14px;
-}
-
-.canvas-container {
-  grid-area: canvas;
-  background-color: #eef4ff;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: center;
-  flex-grow: 1;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.bottombar {
-  grid-area: bottombar;
-  background-color: #bbd6ff;
-  display: flex;
-  align-items: center;
-  padding-left: 12px;
-  gap: 8px;
-  font-size: 13px;
-  height: 40px;
-}
-
-.color-indicator {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  border: 1px solid #000;
-}
-
-.rightbar {
-  grid-area: rightbar;
-  background-color: #f0f0f0;
-  display: flex;
-  flex-direction: column;
-  padding: 8px;
-  gap: 6px;
-  overflow: hidden;
-}
-
-.rightbar textarea {
+/* Textarea styling in rightbar - updated for new theme */
+:deep(.rightbar textarea) {
   flex: 1;
   resize: none;
   font-size: 13px;
-  padding: 6px;
+  padding: 8px;
   min-height: 0;
   max-height: 100%;
   box-sizing: border-box;
+  background-color: rgba(245, 236, 200, 0.9);
+  border: 2px solid #d4c19c;
+  border-radius: 6px;
+  color: #654321;
+  font-family: 'Comic Neue', sans-serif;
+}
+
+:deep(.rightbar textarea::placeholder) {
+  color: #A0522D;
+}
+
+:deep(.rightbar textarea:focus) {
+  outline: none;
+  border-color: #8B4513;
+  box-shadow: 0 0 0 2px rgba(139, 69, 19, 0.2);
 }
 
 .ai-box {
-  background-color: white;
+  background-color: rgba(245, 236, 200, 0.9);
+  border: 2px solid #d4c19c;
+  border-radius: 6px;
   text-align: center;
   font-size: 13px;
   padding: 8px;
   height: 40px;
+  color: #654321;
+  font-weight: bold;
 }
 </style> 

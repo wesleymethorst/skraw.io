@@ -376,7 +376,6 @@ const stopAutoAdvance = () => {
 }
 
 onMounted(() => {
-  document.title = 'Skraw - Free multiplayer sketching, drawing & guessing game'
   startAutoAdvance()
 })
 </script>
