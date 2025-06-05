@@ -2,8 +2,10 @@
     <div class="home-page">
         <!-- Main content wrapper -->
         <div class="flex-1 flex flex-col items-center">
+            <router-link to="/">
             <img src="../assets/skrawio_logo_transparant3.png" alt="Skraw.io Logo"
                 class="max-w-[280px] h-auto block mt-3 mb-4 mx-auto" />
+            </router-link>
 
             <!-- Game interface blok -->
             <div
