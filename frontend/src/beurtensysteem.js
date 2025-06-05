@@ -47,7 +47,7 @@ class Beurt {
         if (!this.beurtActief) return;
         if (this.correctGeradenSpelers.has(speler)) return;
 
-        if(gok.toLowerCase() === this.ontwerp.toLowerCase()){
+        if(gok.toLowerCase() === this.onderwerp.toLowerCase()){
             speler.voegScoreToe(10);
             this.correctGeradenSpelers.add(speler);
 
