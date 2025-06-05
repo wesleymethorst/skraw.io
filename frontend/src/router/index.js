@@ -36,13 +36,36 @@ const routes = [
       title: 'Skraw.io - Register a new account'
     }
   },
-  },
   {
     path: '/contact',
     name: 'Contact',
     component: Contact,
     meta: {
       title: 'Skraw.io - Contact'
+    }
+  },
+  {
+    path: '/terms',
+    name: 'Terms',
+    component: NotFound,
+    meta: {
+      title: 'Skraw.io - Terms of Service'
+    }
+  },
+  {
+    path: '/credits',
+    name: 'Credits',
+    component: NotFound,
+    meta: {
+      title: 'Skraw.io - Credits'
+    }
+  },
+  {
+    path: '/privacy',
+    name: 'Privacy',
+    component: NotFound,
+    meta: {
+      title: 'Skraw.io - Privacy Settings'
     }
   },
   {
