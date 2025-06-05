@@ -1,10 +1,10 @@
 import { io } from 'socket.io-client'
 
 // Backend URL configuratie
-const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000'
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000'
 
 // Socket.IO instance
-export const socket = io(VITE_BACKEND_URL, {
+export const socket = io(BACKEND_URL, {
   transports: ['polling', 'websocket'],
   autoConnect: true,
   forceNew: true,
