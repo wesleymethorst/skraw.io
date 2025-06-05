@@ -142,7 +142,7 @@ class GameServer {
       cors: {
         origin: '*',
         methods: ['GET', 'POST'],
-        credentials: true
+        credentials: false
       },
       transports: ['websocket', 'polling'],
       allowEIO3: true
