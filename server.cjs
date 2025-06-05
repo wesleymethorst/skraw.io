@@ -136,6 +136,7 @@ class GameServer {
   constructor () {
     const app = express()
     const httpServer = createServer(app)
+    const path = require('path')
 
     this.io = new Server(httpServer, {
       cors: {
@@ -146,14 +147,19 @@ class GameServer {
     this.lobbies = new Map()
     this.MAX_PLAYERS_PER_LOBBY = 4
 
-    app.get('/', (req, res) => {
-      res.send('Scribble.io Clone Server')
+    // Serve static files from dist directory
+    app.use(express.static(path.join(__dirname, 'dist')))
+
+    // Serve Vue app for all routes (SPA fallback)
+    app.get('*', (req, res) => {
+      res.sendFile(path.join(__dirname, 'dist', 'index.html'))
     })
 
     this.setupSocketHandlers()
 
-    httpServer.listen(3000, () => {
-      console.log('Server running on port 3000')
+    const PORT = process.env.PORT || 3000
+    httpServer.listen(PORT, '0.0.0.0', () => {
+      console.log(`Server running on port ${PORT}`)
     })
   }
   endTurn (lobby) {

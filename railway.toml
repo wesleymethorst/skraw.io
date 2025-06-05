@@ -1,0 +1,14 @@
+[build]
+builder = "nixpacks"
+
+[deploy]
+healthcheckPath = "/"
+healthcheckTimeout = 100
+restartPolicyType = "never"
+
+[[services]]
+name = "skraw-io"
+
+[services.variables]
+NODE_ENV = "production"
+PORT = "3000" 
