@@ -1,5 +1,5 @@
 [phases.build]
-cmds = ["npm ci", "npm run build"]
+cmds = ["pnpm install --no-frozen-lockfile", "npm run build"]
 
 [phases.start]
 cmd = "npm start"
