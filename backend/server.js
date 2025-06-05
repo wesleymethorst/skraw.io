@@ -309,6 +309,22 @@ class GameServer {
         }
       })
 
+      socket.on('canvas-action', data => {
+        if (!currentLobby) return
+
+        if (data.type === 'clear') {
+          currentLobby.drawingHistory = []
+          currentLobby.drawingData = []
+        } else {
+          currentLobby.drawingHistory.push(data)
+          currentLobby.drawingData.push(data)
+        }
+
+        socket
+          .to(currentLobby.id)
+          .emit('canvas-action', { ...data, playerId: socket.id })
+      })
+
       socket.on('player_ready', () => {
         if (!currentLobby) return
 
