@@ -147,7 +147,7 @@ onMounted(() => {
   socket.value.emit('join_lobby', { name: playerName.value, character: character.value });
 
 socket.value.on('correct_guess', (data) => {
-  isCurrentDrawer.value = falsex
+  isCurrentDrawer.value = false;
 });
 socket.value.on('your_word', (data) => {
   currentWord.value = data.word;
