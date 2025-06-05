@@ -141,7 +141,8 @@ class GameServer {
     this.io = new Server(httpServer, {
       cors: {
         origin: '*',
-        methods: ['GET', 'POST']
+        methods: ['GET', 'POST'],
+        credentials: true
       },
       transports: ['websocket', 'polling'],
       allowEIO3: true
