@@ -140,19 +140,16 @@ class GameServer {
 
     this.io = new Server(httpServer, {
       cors: {
-        origin: '*',
+        origin: process.env.FRONTEND_URL || '*',
         methods: ['GET', 'POST']
       }
     })
     this.lobbies = new Map()
     this.MAX_PLAYERS_PER_LOBBY = 4
 
-    // Serve static files from dist directory
-    app.use(express.static(path.join(__dirname, 'dist')))
-
-    // Serve Vue app for all routes (SPA fallback)
-    app.get('*', (req, res) => {
-      res.sendFile(path.join(__dirname, 'dist', 'index.html'))
+    // Health check endpoint
+    app.get('/', (req, res) => {
+      res.json({ status: 'OK', message: 'Skraw.io Backend is running' })
     })
 
     this.setupSocketHandlers()

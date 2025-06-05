@@ -1,47 +1,57 @@
-# Skraw.io - Vue 3 + Socket.io Drawing Game
+# Skraw.io
 
-Een multiplayer tekening-raad spel gebouwd met Vue 3, Express.js en Socket.io.
+Een real-time multiplayer teken- en raadspel gebouwd met Vue.js en Socket.IO.
 
-## Features
+## 🏗️ Architectuur
 
-- Real-time multiplayer gameplay
-- Socket.io voor live communicatie
-- Vue 3 frontend met Vite
-- Express.js backend
-- Meertalige woorden (Nederlands, Engels, Duits, Frans)
+Dit project is opgesplitst in aparte microservices voor deployment op Railway:
 
-## Development
+- **Backend** (`/backend/`) - Express.js server met Socket.IO voor real-time communicatie
+- **Frontend** (`/frontend/`) - Vue.js SPA met canvas tekenfunctionaliteit
 
+## 🚀 Deployment
+
+Zie `DEPLOYMENT.md` voor gedetailleerde instructies over het deployen op Railway.
+
+## 🛠️ Lokale Development
+
+### Backend starten:
 ```bash
-# Install dependencies
+cd backend
 npm install
-
-# Start development (frontend + backend)
-npm run dev:all
-
-# Or run separately:
-npm run dev     # Frontend only
-npm run server  # Backend only
+npm run dev
 ```
 
-## Deployment
-
-### Railway Deployment
-
-Dit project is geconfigureerd voor Railway deployment:
-
-1. Push je code naar een Git repository
-2. Ga naar [Railway](https://railway.app) 
-3. Connect je repository
-4. Railway zal automatisch de `nixpacks.toml` configuratie gebruiken
-5. De applicatie wordt gebouwd met `npm run build` en gestart met `npm start`
-
-### Local Build
-
+### Frontend starten:
 ```bash
-# Build for production
-npm run build
+cd frontend  
+npm install
+npm run dev
+```
 
-# Start production server
-npm start
+De frontend draait op `http://localhost:5173` en verbindt met de backend op `http://localhost:3000`.
+
+## 🎮 Game Features
+
+- Real-time multiplayer tekenen en raden
+- Lobby systeem (tot 4 spelers)
+- Chat functionaliteit
+- Multi-language woordenlijsten (NL, EN, DE, FR)
+- Responsive design
+- Character selectie
+
+## 📁 Project Structuur
+
+```
+skraw.io/
+├── backend/          # Express.js + Socket.IO server
+│   ├── server.js
+│   ├── package.json
+│   └── railway.toml
+├── frontend/         # Vue.js SPA
+│   ├── src/
+│   ├── public/
+│   ├── package.json
+│   └── railway.toml
+└── DEPLOYMENT.md     # Railway deployment guide
 ```

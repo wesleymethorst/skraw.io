@@ -98,8 +98,8 @@ import ChatLobby from '../components/ChatLobby.vue';
 import { ref, onMounted, computed } from 'vue';
 import PlayerList from '../components/PlayerList.vue';
 import CanvasBoard from '../components/CanvasBoard.vue';
-import { io } from 'socket.io-client';
 import { useRoute } from 'vue-router';
+import socket from '../config/socket.js';
 
 const playerName = ref('');
 const players = ref([]);
@@ -107,7 +107,6 @@ const currentColor = ref('#000000');
 const lobbyId = ref('');
 const maxPlayers = ref(4);
 const character = ref('');
-const socket = ref(io('http://localhost:3000'));
 const currentWord = ref('');
 const isCurrentDrawer = ref(false);
 const route = useRoute();
@@ -144,21 +143,21 @@ function redrawCanvas(dataArray) {
 }
 
 onMounted(() => {
-  socket.value.emit('join_lobby', { name: playerName.value, character: character.value });
+  socket.emit('join_lobby', { name: playerName.value, character: character.value });
 
-socket.value.on('correct_guess', (data) => {
+socket.on('correct_guess', (data) => {
   isCurrentDrawer.value = false;
 });
-socket.value.on('your_word', (data) => {
+socket.on('your_word', (data) => {
   currentWord.value = data.word;
   isCurrentDrawer.value = true
 });
 
-socket.value.on('game_started', (data) => {
+socket.on('game_started', (data) => {
   isCurrentDrawer.value = false
 })
 
-socket.value.on('player_ready_update', (data) => {
+socket.on('player_ready_update', (data) => {
     const playerIndex = players.value.findIndex(p => p.id === data.playerId);
     if (playerIndex !== -1) {
       players.value[playerIndex].isReady = data.isReady;
@@ -166,7 +165,7 @@ socket.value.on('player_ready_update', (data) => {
     }
   });
 
-  socket.value.on('lobby_assigned', (data) => {
+  socket.on('lobby_assigned', (data) => {
     
     lobbyId.value = data.lobbyId;
     players.value = data.players;
@@ -177,11 +176,11 @@ socket.value.on('player_ready_update', (data) => {
     }
   });
 
-  socket.value.on('player_joined', (data) => {
+  socket.on('player_joined', (data) => {
     players.value = data.players;
   });
 
-  socket.value.on('player_left', (data) => {
+  socket.on('player_left', (data) => {
     players.value = data.players;
   });
 });

@@ -7,7 +7,7 @@ healthcheckTimeout = 100
 restartPolicyType = "never"
 
 [[services]]
-name = "skraw-io"
+name = "skraw-backend"
 
 [services.variables]
 NODE_ENV = "production"
