@@ -140,9 +140,9 @@ class GameServer {
 
     this.io = new Server(httpServer, {
       cors: {
-        origin: '*',
+        origin: 'https://express-socketserver.up.railway.app',
         methods: ['GET', 'POST'],
-        credentials: false
+        credentials: true
       },
       transports: ['websocket', 'polling'],
       allowEIO3: true
