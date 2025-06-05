@@ -100,7 +100,6 @@ onMounted(() => {
   });
 
   props.socket.on('new_message', (message) => {
-    console.log(message)
     messages.value.push(message);
   });
 });

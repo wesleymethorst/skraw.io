@@ -168,11 +168,10 @@ const undo = () => {
   redoStack.value.push(ctx.getImageData(0, 0, canvasRef.value.width, canvasRef.value.height));
   ctx.putImageData(undoStack.value.pop(), 0, 0);
   
-  // Socket - stuur undo naar andere clients
-  if (props.socket) {
+  // Socket - stuur undo commando naar andere clients (alleen als je de tekenaar bent)
+  if (props.socket && props.isCurrentDrawer) {
     props.socket.emit('canvas-action', {
-      type: 'undo',
-      imageData: ctx.getImageData(0, 0, canvasRef.value.width, canvasRef.value.height)
+      type: 'undo'
     });
   }
 };
@@ -364,20 +363,23 @@ const handleMouseMove = (e) => {
 
   if (mode.value === 'draw') {
     drawLineSmooth(lastX.value, lastY.value, x, y, brushSize.value / 2, currentColor.value);
-    lastX.value = x;
-    lastY.value = y;
     
-    // Socket - stuur draw movement
+    // Socket - stuur draw movement met lastX en lastY voor vloeiende lijnen
     if (props.socket) {
       props.socket.emit('draw', {
         type: 'draw',
         x: x,
         y: y,
+        lastX: lastX.value,
+        lastY: lastY.value,
         color: currentColor.value,
         brushSize: brushSize.value,
         mode: 'draw'
       });
     }
+    
+    lastX.value = x;
+    lastY.value = y;
   } else if (mode.value === 'shape' && isDrawingShape.value) {
     ctx.putImageData(previewImage.value, 0, 0);
     ctx.fillStyle = ctx.strokeStyle = currentColor.value;
@@ -421,19 +423,22 @@ const handleMouseMove = (e) => {
   }
 };
 
-const handleMouseUp = () => {
+const handleMouseUp = (e) => {
   if (!props.isCurrentDrawer) return;
   
   // Als we een shape aan het tekenen waren, stuur final shape naar socket
   if (mode.value === 'shape' && isDrawingShape.value && props.socket) {
     const rect = canvasRef.value.getBoundingClientRect();
+    const endX = e ? e.clientX - rect.left : lastX.value;
+    const endY = e ? e.clientY - rect.top : lastY.value;
+    
     props.socket.emit('draw', {
       type: 'shape',
       shapeType: shapeType.value,
       startX: startX.value,
       startY: startY.value,
-      endX: lastX.value,
-      endY: lastY.value,
+      endX: endX,
+      endY: endY,
       color: currentColor.value,
       brushSize: brushSize.value
     });
@@ -470,6 +475,13 @@ onMounted(() => {
       if (data.playerId !== props.socket.id) {
         handleRemoteCanvasAction(data);
       }
+    });
+
+    props.socket.on('initial_drawing_data', (drawingHistory) => {
+      // Herstel de canvas met alle bestaande drawing data
+      drawingHistory.forEach(data => {
+        handleRemoteDrawing(data);
+      });
     });
   }
 });

@@ -136,7 +136,13 @@ class GameServer {
   constructor () {
     const app = express()
     const httpServer = createServer(app)
-    const path = require('path')
+    const cors = require('cors');
+    const authRoutes = require('./auth/auth.routes');
+  
+    app.use(cors());
+    app.use(express.json());
+    app.use('/auth', authRoutes);
+
 
     this.io = new Server(httpServer, {
       cors: {
@@ -299,30 +305,37 @@ class GameServer {
         }
       })
 
-      socket.on('draw', data => {
-        if (!currentLobby) return
 
-        const player = currentLobby.players.get(socket.id)
-        if (player && player.isDrawing) {
-          currentLobby.drawingData.push(data) // Bewaar de tekening
-          socket.to(currentLobby.id).emit('draw', data)
-        }
-      })
 
       socket.on('canvas-action', data => {
         if (!currentLobby) return
 
+        const player = currentLobby.players.get(socket.id)
+        if (!player) return
+
         if (data.type === 'clear') {
+          // Wis alle tekening data op de server
           currentLobby.drawingHistory = []
           currentLobby.drawingData = []
+          
+          // Stuur clear commando naar ALLE clients in de lobby (inclusief degene die clear heeft gedrukt)
+          this.io.to(currentLobby.id).emit('canvas-action', { 
+            type: 'clear', 
+            playerId: socket.id 
+          })
         } else {
-          currentLobby.drawingHistory.push(data)
-          currentLobby.drawingData.push(data)
+          // Alleen toestaan als de speler aan het tekenen is
+          if (player.isDrawing) {
+            currentLobby.drawingHistory.push(data)
+            currentLobby.drawingData.push(data)
+            
+            // Stuur tekening data door naar andere clients
+            socket.to(currentLobby.id).emit('canvas-action', { 
+              ...data, 
+              playerId: socket.id 
+            })
+          }
         }
-
-        socket
-          .to(currentLobby.id)
-          .emit('canvas-action', { ...data, playerId: socket.id })
       })
 
       socket.on('player_ready', () => {
