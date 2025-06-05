@@ -2,8 +2,6 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../pages/Home.vue'
 import Game from '../pages/Game.vue'
 import Login from '../pages/Login.vue'
-import Contact from '../pages/Contact.vue'
-import NotFound from '../pages/NotFound.vue'
 
 const routes = [
   {
@@ -29,6 +27,15 @@ const routes = [
     meta: {
       title: 'Skraw.io - Login'
     }
+  },
+  {
+    path: '/register',
+    name: 'Register',
+    component: Register,
+    meta: {
+      title: 'Skraw.io - Register a new account'
+    }
+  },
   },
   {
     path: '/contact',

@@ -147,6 +147,7 @@ onMounted(() => {
 
 socket.on('correct_guess', (data) => {
   isCurrentDrawer.value = false;
+  currentWord.value = '';
 });
 socket.on('your_word', (data) => {
   currentWord.value = data.word;
