@@ -4,6 +4,7 @@ import Game from '../pages/Game.vue'
 import Login from '../pages/Login.vue'
 import Contact from '../pages/Contact.vue'
 import NotFound from '../pages/NotFound.vue'
+import Register from '../pages/Register.vue'
 
 const routes = [
   {
