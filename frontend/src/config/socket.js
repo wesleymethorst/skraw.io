@@ -8,10 +8,6 @@ console.log(BACKEND_URL)
 // Socket.IO instance
 export const socket = io(BACKEND_URL, {
   transports: ['polling', 'websocket'],
-  autoConnect: true,
-  forceNew: true,
-  reconnection: true,
-  timeout: 20000,
   withCredentials: true
 })
 
