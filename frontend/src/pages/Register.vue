@@ -102,7 +102,7 @@ const characterImagePath = computed(() => {
     return new URL(`../assets/characters/character_${selectedColor.value}_${selectedMouth.value}_${selectedEyes.value}.png`, import.meta.url).href
 })
 const characterUnknownImagePath = computed(() => {
-    return new URL(`../assets/characters/character_unknown.png`, import.meta.url).href
+    return new URL(`../assets/extracharacters/character_new.png`, import.meta.url).href
 })
 
 const getColorHex = (colorName) => {

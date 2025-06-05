@@ -20,7 +20,7 @@
                 <!-- 404 character -->
                 <div class="bg-[#f5ecc8d9] shadow-[0_2px_10px_rgba(0,0,0,0.2)] p-4 rounded-sm mb-4">
                     <div class="w-32 h-32 bg-white rounded-lg border-2 border-[#d4c19c] flex items-center justify-center shadow-inner">
-                        <img src="../assets/characters/character_404.png" alt="404 Character" class="w-24 h-24 object-contain" />
+                        <img src="../assets/extracharacters/character_404.png" alt="404 Character" class="w-24 h-24 object-contain" />
                     </div>
                 </div>
 
