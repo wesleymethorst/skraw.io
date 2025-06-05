@@ -127,9 +127,8 @@
         <div class="bg-[#f5ecc8d9] rounded-sm p-4 shadow-[0_2px_10px_rgba(0,0,0,0.2)] min-h-[100px]">
           <h3 class="text-[#8B4513] text-sm mb-2 font-black text-center">About</h3>
           <p class="text-[#654321] leading-5 mb-1 text-xs">
-            <strong>skraw.io</strong> is a free online drawing and guessing game. Each round, one player draws a word while others try to guess it. Earn points by guessing or drawing well. The player with the most points wins. Have fun!.
+            <strong>skraw.io</strong> is a school project by 5 ICT students and a fun online drawing and guessing game. One player draws a word while others try to guess it. Earn points by guessing correctly or drawing well!
           </p>
-          <p class="text-[#654321] leading-5 mb-0 text-xs">Have fun!</p>
         </div>
         
         <div class="bg-[#f5ecc8d9] rounded-sm p-4 shadow-[0_2px_10px_rgba(0,0,0,0.2)] min-h-[100px] flex flex-col">
@@ -279,10 +278,10 @@
     <!-- Footer links -->
     <div class="w-screen bg-[#f5ecc8bf] pt-2 pb-2 flex justify-center">
       <div class="flex flex-col md:flex-row justify-center gap-4 md:gap-6 text-center">
-        <a href="#" class="text-[#654321] no-underline text-xs font-bold transition-colors duration-300 hover:text-[#8B4513] hover:underline">Contact</a>
-        <a href="#" class="text-[#654321] no-underline text-xs font-bold transition-colors duration-300 hover:text-[#8B4513] hover:underline">Terms of Service</a>
-        <a href="#" class="text-[#654321] no-underline text-xs font-bold transition-colors duration-300 hover:text-[#8B4513] hover:underline">Credits</a>
-        <a href="#" class="text-[#654321] no-underline text-xs font-bold transition-colors duration-300 hover:text-[#8B4513] hover:underline">Privacy Settings</a>
+        <router-link to="/contact" class="text-[#654321] no-underline text-xs font-bold transition-colors duration-300 hover:text-[#8B4513] hover:underline">Contact</router-link>
+        <router-link to="/terms" class="text-[#654321] no-underline text-xs font-bold transition-colors duration-300 hover:text-[#8B4513] hover:underline">Terms of Service</router-link>
+        <router-link to="/credits" class="text-[#654321] no-underline text-xs font-bold transition-colors duration-300 hover:text-[#8B4513] hover:underline">Credits</router-link>
+        <router-link to="/privacy" class="text-[#654321] no-underline text-xs font-bold transition-colors duration-300 hover:text-[#8B4513] hover:underline">Privacy Settings</router-link>
       </div>
     </div>
   </div>
