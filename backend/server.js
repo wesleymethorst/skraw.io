@@ -140,7 +140,7 @@ class GameServer {
 
     this.io = new Server(httpServer, {
       cors: {
-        origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+        origin: 'https://express-socketserver.up.railway.app',
         methods: ['GET', 'POST'],
         credentials: true
       },
