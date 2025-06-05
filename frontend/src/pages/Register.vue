@@ -1,5 +1,5 @@
 <template>
-    <div class="login-page">
+    <div class="register-page">
         <!-- Main content wrapper -->
         <div class="flex-1 flex flex-col items-center">
             <router-link to="/">
@@ -11,9 +11,9 @@
             <div
                 class="bg-[#f5ecc8bf] rounded-sm p-4 w-[420px] min-h-[240px] shadow-[0_4px_20px_rgba(0,0,0,0.3)] mb-4 flex flex-col gap-2">
                 <!-- Name input and language selector row -->
-                <h1 class="text-[#8B4513] text-xl font-bold text-center mb-0">Login</h1>
+                <h1 class="text-[#8B4513] text-xl font-bold text-center mb-0">Register</h1>
 
-                <!-- Login form - in 2 kolommen -->
+                <!-- Registration form - in 2 kolommen -->
                 <div
                     class="bg-[#f5ecc8d9] shadow-[0_2px_10px_rgba(0,0,0,0.2)] my-2 p-3 rounded-sm flex flex-row items-center">
 
@@ -23,13 +23,25 @@
                             <h4 class="text-[#8B4513] text-s font-bold text-left mb-0">Username</h4>
                             <input type="text"
                                 class="w-full py-2 px-3 border-2 border-[#d4c19c] rounded-md text-sm bg-white/90 text-[#654321] placeholder-gray-400"
-                                placeholder="Enter your username" v-model="playerName" @keyup.enter="playGame" />
+                                placeholder="Choose a username" v-model="playerName" />
+                        </div>
+                        <div>
+                            <h4 class="text-[#8B4513] text-s font-bold text-left mb-0">Email</h4>
+                            <input type="email"
+                                class="w-full py-2 px-3 border-2 border-[#d4c19c] rounded-md text-sm bg-white/90 text-[#654321] placeholder-gray-400"
+                                placeholder="Enter your email" v-model="playerEmail" />
                         </div>
                         <div>
                             <h4 class="text-[#8B4513] text-s font-bold text-left mb-0">Password</h4>
                             <input type="password"
                                 class="w-full py-2 px-3 border-2 border-[#d4c19c] rounded-md text-sm bg-white/90 text-[#654321] placeholder-gray-400"
-                                placeholder="Enter your password" v-model="playerPassword" @keyup.enter="playGame" />
+                                placeholder="Choose a password" v-model="playerPassword" />
+                        </div>
+                        <div>
+                            <h4 class="text-[#8B4513] text-s font-bold text-left mb-0">Confirm Password</h4>
+                            <input type="password"
+                                class="w-full py-2 px-3 border-2 border-[#d4c19c] rounded-md text-sm bg-white/90 text-[#654321] placeholder-gray-400"
+                                placeholder="Confirm your password" v-model="confirmPassword" />
                         </div>
                     </div>
 
@@ -45,21 +57,21 @@
                 </div>
                 <div>
                     <router-link 
-                    to="/register" 
+                    to="/login" 
                     class="text-blue-600 hover:underline"
                     >
-                    Not a member? Sign up
+                    Already have an account? Login
                     </router-link>
                 </div>        
 
-                <!-- Login buttons -->
+                <!-- Register button -->
                 <button
+                    @click="register"
                     class="bg-blue-600 text-white border-none rounded-md py-2.5 px-4 text-base font-bold cursor-pointer transition-colors duration-300 w-full hover:bg-blue-700">
-                    Login
+                    Register
                 </button>
             </div>
         </div>
-
     </div>
 </template>
 
@@ -69,6 +81,9 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const playerName = ref('')
+const playerEmail = ref('')
+const playerPassword = ref('')
+const confirmPassword = ref('')
 const selectedLanguage = ref('dutch')
 
 const selectedColor = ref('blue')
@@ -106,19 +121,34 @@ const handleImageError = (event) => {
     console.warn('Failed to load character image:', event.target.src)
 }
 
-const playGame = () => {
-    if (playerName.value.trim()) {
-        router.push({
-            path: '/game',
-            query: {
-                name: encodeURIComponent(playerName.value),
-                lang: selectedLanguage.value,
-                character: `${selectedColor.value}_${selectedMouth.value}_${selectedEyes.value}`
-            }
-        })
-    } else {
-        alert('Please enter your name before playing!')
+const register = () => {
+    if (!playerName.value.trim()) {
+        alert('Please enter a username!')
+        return
     }
+    if (!playerEmail.value.trim()) {
+        alert('Please enter your email!')
+        return
+    }
+    if (!playerPassword.value) {
+        alert('Please enter a password!')
+        return
+    }
+    if (playerPassword.value !== confirmPassword.value) {
+        alert('Passwords do not match!')
+        return
+    }
+    
+    // Here you would typically make an API call to register the user
+    // For now, we'll just redirect to the game page
+    router.push({
+        path: '/game',
+        query: {
+            name: encodeURIComponent(playerName.value),
+            lang: selectedLanguage.value,
+            character: `${selectedColor.value}_${selectedMouth.value}_${selectedEyes.value}`
+        }
+    })
 }
 
 // Carousel navigation methods
@@ -161,7 +191,7 @@ onMounted(() => {
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap');
 
-.login-page {
+.register-page {
     width: 100vw;
     height: 100vh;
     max-height: 100vh;
