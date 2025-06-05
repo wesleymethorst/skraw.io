@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Canvas Drawing App with Rotatable Triangle</title>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    #canvasWrapper {
+      flex: 1;
+      position: relative;
+    }
+    canvas {
+      border: 2px solid #333;
+      display: block;
+      margin: 10px auto;
+      background: white;
+    }
+    #toolbar {
+      padding: 10px;
+      background: #a3c3ff;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: center;
+    }
+    .toolbar-btn {
+      padding: 6px 14px;
+      font-size: 14px;
+      border: none;
+      border-radius: 5px;
+      background-color: #ddd;
+      color: #222;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .toolbar-btn:hover:not(:disabled) {
+      background-color: #bbb;
+    }
+    .toolbar-btn.active {
+      background-color: #555;
+      color: white;
+    }
+    .toolbar-btn:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+    input[type="color"],
+    input[type="range"] {
+      cursor: pointer;
+    }
+    label {
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="canvasWrapper">
+  <canvas id="canvas" width="800" height="600"></canvas>
+</div>
+
+<div id="toolbar">
+  <input type="color" id="colorPicker" value="#000000" />
+  <button id="drawBtn" class="toolbar-btn">Draw</button>
+  <button id="fillBtn" class="toolbar-btn">Fill</button>
+  <button id="rectBtn" class="toolbar-btn">Rectangle</button>
+  <button id="circleBtn" class="toolbar-btn">Circle</button>
+  <button id="lineBtn" class="toolbar-btn">Line</button>
+  <button id="triangleBtn" class="toolbar-btn">Triangle</button>
+  <label>
+    Brush Size:
+    <input type="range" id="brushSize" min="1" max="50" value="5" />
+  </label>
+  <button id="undoBtn" class="toolbar-btn" disabled>Undo</button>
+  <button id="redoBtn" class="toolbar-btn" disabled>Redo</button>
+  <button id="clearBtn" class="toolbar-btn">Clear</button>
+</div>
+
+<script>
+(() => {
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const colorPicker = document.getElementById('colorPicker');
+  const brushSize = document.getElementById('brushSize');
+  const drawBtn = document.getElementById('drawBtn');
+  const fillBtn = document.getElementById('fillBtn');
+  const rectBtn = document.getElementById('rectBtn');
+  const circleBtn = document.getElementById('circleBtn');
+  const lineBtn = document.getElementById('lineBtn');
+  const triangleBtn = document.getElementById('triangleBtn');
+  const undoBtn = document.getElementById('undoBtn');
+  const redoBtn = document.getElementById('redoBtn');
+  const clearBtn = document.getElementById('clearBtn');
+
+  let mode = 'draw';
+  let shapeType = null;
+  let drawing = false;
+  let isDrawingShape = false;
+  let startX = 0, startY = 0;
+  let lastX = 0, lastY = 0;
+  let previewImage = null;
+
+  const undoStack = [];
+  const redoStack = [];
+
+  function saveState() {
+    undoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+    if (undoStack.length > 50) undoStack.shift();
+    redoStack.length = 0;
+    updateUndoRedoButtons();
+  }
+
+  function undo() {
+    if (!undoStack.length) return;
+    redoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+    ctx.putImageData(undoStack.pop(), 0, 0);
+    updateUndoRedoButtons();
+  }
+
+  function redo() {
+    if (!redoStack.length) return;
+    undoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+    ctx.putImageData(redoStack.pop(), 0, 0);
+    updateUndoRedoButtons();
+  }
+
+  function updateUndoRedoButtons() {
+    undoBtn.disabled = undoStack.length === 0;
+    redoBtn.disabled = redoStack.length === 0;
+  }
+
+  function clearCanvas() {
+    saveState();
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+
+  function setMode(newMode) {
+    mode = newMode;
+    shapeType = null;
+    updateActiveButtons();
+  }
+
+  function setShape(shape) {
+    shapeType = shape;
+    mode = 'shape';
+    updateActiveButtons();
+  }
+
+  function updateActiveButtons() {
+    drawBtn.classList.toggle('active', mode === 'draw' && !shapeType);
+    fillBtn.classList.toggle('active', mode === 'fill');
+    rectBtn.classList.toggle('active', shapeType === 'rectangle');
+    circleBtn.classList.toggle('active', shapeType === 'circle');
+    lineBtn.classList.toggle('active', shapeType === 'line');
+    triangleBtn.classList.toggle('active', shapeType === 'triangle');
+  }
+
+  function hexToRgb(hex) {
+    hex = hex.replace('#', '');
+    return {
+      r: parseInt(hex.substring(0, 2), 16),
+      g: parseInt(hex.substring(2, 4), 16),
+      b: parseInt(hex.substring(4, 6), 16)
+    };
+  }
+
+  function floodFill(x, y, fillColor) {
+    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imgData.data;
+    const w = imgData.width;
+    const h = imgData.height;
+
+    function getPos(x, y) {
+      return (y * w + x) * 4;
+    }
+
+    const startPos = getPos(x, y);
+    const startColor = data.slice(startPos, startPos + 4);
+    const fillColorArr = [fillColor.r, fillColor.g, fillColor.b, 255];
+
+    function colorsMatch(a, b) {
+      return a.every((val, i) => val === b[i]);
+    }
+
+    if (colorsMatch(startColor, fillColorArr)) return;
+
+    const stack = [[x, y]];
+    while (stack.length) {
+      const [cx, cy] = stack.pop();
+      if (cx < 0 || cx >= w || cy < 0 || cy >= h) continue;
+      const pos = getPos(cx, cy);
+      const currColor = data.slice(pos, pos + 4);
+      if (colorsMatch(currColor, startColor)) {
+        data.set(fillColorArr, pos);
+        stack.push([cx + 1, cy], [cx - 1, cy], [cx, cy + 1], [cx, cy - 1]);
+      }
+    }
+    ctx.putImageData(imgData, 0, 0);
+  }
+
+  function drawLineSmooth(x1, y1, x2, y2, radius, color) {
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const distance = Math.hypot(dx, dy);
+    const steps = Math.ceil(distance / (radius / 2));
+    ctx.fillStyle = color;
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps;
+      const cx = x1 + dx * t;
+      const cy = y1 + dy * t;
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // Draw rotated isosceles triangle with tip at (tipX, tipY)
+  // base center is at baseCenterX, baseCenterY
+  // base length = baseLength
+  function drawRotatedTriangle(tipX, tipY, baseCenterX, baseCenterY, baseLength) {
+    // Vector from tip to base center
+    const vx = baseCenterX - tipX;
+    const vy = baseCenterY - tipY;
+    // Length of the vector (height)
+    const height = Math.hypot(vx, vy);
+    if (height === 0) return; // Avoid division by zero
+
+    // Unit vector along height
+    const ux = vx / height;
+    const uy = vy / height;
+
+    // Perpendicular unit vector to height (to define base width)
+    const perpX = -uy;
+    const perpY = ux;
+
+    // Base half length
+    const halfBase = baseLength / 2;
+
+    // Compute the two base points
+    const baseLeftX = baseCenterX + perpX * halfBase;
+    const baseLeftY = baseCenterY + perpY * halfBase;
+
+    const baseRightX = baseCenterX - perpX * halfBase;
+    const baseRightY = baseCenterY - perpY * halfBase;
+
+    ctx.beginPath();
+    ctx.moveTo(tipX, tipY);
+    ctx.lineTo(baseLeftX, baseLeftY);
+    ctx.lineTo(baseRightX, baseRightY);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  canvas.addEventListener('mousedown', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    if (mode === 'fill') {
+      saveState();
+      floodFill(Math.floor(x), Math.floor(y), hexToRgb(colorPicker.value));
+    } else if (mode === 'draw') {
+      saveState();
+      drawing = true;
+      startX = lastX = x;
+      startY = lastY = y;
+      ctx.fillStyle = ctx.strokeStyle = colorPicker.value;
+    } else if (mode === 'shape') {
+      saveState();
+      drawing = true;
+      isDrawingShape = true;
+      startX = x;
+      startY = y;
+      previewImage = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    }
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!drawing) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    if (mode === 'draw') {
+      drawLineSmooth(lastX, lastY, x, y, brushSize.value / 2, colorPicker.value);
+      lastX = x;
+      lastY = y;
+    } else if (mode === 'shape' && isDrawingShape) {
+      ctx.putImageData(previewImage, 0, 0);
+      ctx.fillStyle = ctx.strokeStyle = colorPicker.value;
+      ctx.lineWidth = brushSize.value;
+
+      switch (shapeType) {
+        case 'rectangle':
+          ctx.fillRect(startX, startY, x - startX, y - startY);
+          break;
+        case 'circle':
+          ctx.beginPath();
+          ctx.ellipse(
+            startX + (x - startX) / 2,
+            startY + (y - startY) / 2,
+            Math.abs((x - startX) / 2),
+            Math.abs((y - startY) / 2),
+            0, 0, 2 * Math.PI
+          );
+          ctx.fill();
+          break;
+        case 'line':
+          ctx.beginPath();
+          ctx.moveTo(startX, startY);
+          ctx.lineTo(x, y);
+          ctx.stroke();
+          break;
+        case 'triangle':
+          // Base length = distance from tip to mouse * some scale or fixed size
+          // Let's make base length proportional to distance perpendicular to height vector for easier control
+          const tipX = startX;
+          const tipY = startY;
+
+          // Vector from tip to current mouse
+          const dx = x - tipX;
+          const dy = y - tipY;
+
+          // Height vector length (distance)
+          const height = Math.hypot(dx, dy);
+          if (height === 0) break;
+
+          // To find base center, move mouse point * 0.5 from tip towards mouse (midpoint on height vector)
+          const baseCenterX = tipX + dx * 0.6; // You can tweak this factor to control triangle shape
+          const baseCenterY = tipY + dy * 0.6;
+
+          // Base length - control by mouse distance perpendicular to height vector
+          // Calculate perpendicular vector to (dx, dy)
+          const length = height;
+          const baseLength = length / 2 + brushSize.value * 3; // base length proportional + offset
+
+          drawRotatedTriangle(tipX, tipY, baseCenterX, baseCenterY, baseLength);
+          break;
+      }
+    }
+  });
+
+  document.addEventListener('mouseup', () => {
+    drawing = false;
+    isDrawingShape = false;
+  });
+
+  drawBtn.addEventListener('click', () => setMode('draw'));
+  fillBtn.addEventListener('click', () => setMode('fill'));
+  rectBtn.addEventListener('click', () => setShape('rectangle'));
+  circleBtn.addEventListener('click', () => setShape('circle'));
+  lineBtn.addEventListener('click', () => setShape('line'));
+  triangleBtn.addEventListener('click', () => setShape('triangle'));
+  undoBtn.addEventListener('click', undo);
+  redoBtn.addEventListener('click', redo);
+  clearBtn.addEventListener('click', clearCanvas);
+
+  colorPicker.addEventListener('change', () => {
+    ctx.fillStyle = ctx.strokeStyle = colorPicker.value;
+  });
+  brushSize.addEventListener('change', () => {
+    ctx.lineWidth = brushSize.value;
+  });
+
+  ctx.lineWidth = brushSize.value;
+  ctx.strokeStyle = ctx.fillStyle = colorPicker.value;
+  updateUndoRedoButtons();
+  updateActiveButtons();
+})();
+</script>
+
+</body>
+</html>

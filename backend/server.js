@@ -141,8 +141,11 @@ class GameServer {
     this.io = new Server(httpServer, {
       cors: {
         origin: process.env.FRONTEND_URL || '*',
-        methods: ['GET', 'POST']
-      }
+        methods: ['GET', 'POST'],
+        credentials: true
+      },
+      transports: ['websocket', 'polling'],
+      allowEIO3: true
     })
     this.lobbies = new Map()
     this.MAX_PLAYERS_PER_LOBBY = 4
