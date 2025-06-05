@@ -136,12 +136,12 @@ class GameServer {
   constructor () {
     const app = express()
     const httpServer = createServer(app)
-    // const cors = require('cors');
-    // const authRoutes = require('./auth/auth.routes');
+    const cors = require('cors');
+    const authRoutes = require('./auth/auth.routes');
   
-    // app.use(cors());
-    // app.use(express.json());
-    // app.use('/auth', authRoutes);
+    app.use(cors());
+    app.use(express.json());
+    app.use('/auth', authRoutes);
 
 
     this.io = new Server(httpServer, {
