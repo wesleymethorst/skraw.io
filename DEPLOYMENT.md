@@ -36,7 +36,7 @@ Deze guide helpt je bij het deployen van Skraw.io als aparte microservices op Ra
 
 **Environment Variables voor Frontend:**
 - `NODE_ENV=production`
-- `VITE_BACKEND_URL=https://jouw-backend-url.railway.app`
+- `BACKEND_URL=https://jouw-backend-url.railway.app`
 
 ### 3. Backend CORS Configureren
 
@@ -63,7 +63,6 @@ Je kunt custom domains instellen in Railway:
 ## Troubleshooting
 
 **Socket.IO verbinding lukt niet:**
-- Controleer of `VITE_BACKEND_URL` correct is ingesteld
 - Controleer of `FRONTEND_URL` in backend correct is ingesteld
 - Zorg dat beide services draaien
 

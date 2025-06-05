@@ -18,7 +18,7 @@ Frontend service voor Skraw.io - een Vue.js SPA voor real-time tekenen en raden 
 3. Railway zal automatisch de `railway.toml` configuratie gebruiken
 4. Zet de volgende environment variables:
    - `NODE_ENV=production`
-   - `VITE_BACKEND_URL=https://jouw-backend-url.railway.app`
+   - `BACKEND_URL=https://jouw-backend-url.railway.app`
 
 ## Lokale Development
 
@@ -37,4 +37,4 @@ npm run start
 
 ## Environment Variables
 
-- `VITE_BACKEND_URL` - URL van de backend service (voor Socket.IO verbinding) 
+- `BACKEND_URL` - URL van de backend service (voor Socket.IO verbinding) 
