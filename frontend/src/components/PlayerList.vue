@@ -85,12 +85,12 @@ const getInitial = (name) => {
 const getCharacterImagePath = (character) => {
   
   try {
-    const characterToUse = character || 'blue_smug_wide';
+    const characterToUse = character || 'unknown';
     const path = new URL(`../assets/characters/character_${characterToUse}.png`, import.meta.url).href;
     return path;
   } catch (error) {
     console.error('❌ Failed to generate character image path:', character, error);
-    return new URL(`../assets/characters/character_blue_smug_wide.png`, import.meta.url).href;
+    return new URL(`../assets/characters/character_unknown.png`, import.meta.url).href;
   }
 };
 

@@ -111,7 +111,7 @@ const currentWord = ref('');
 const isCurrentDrawer = ref(false);
 const route = useRoute();
 playerName.value = route.query.name || '';
-character.value = route.query.character || 'blue_smug_wide';
+character.value = route.query.character || 'unknown';
 
 function redrawCanvas(dataArray) {
   if (!ctx.value || !canvasRef.value) return;

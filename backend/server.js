@@ -36,7 +36,7 @@ class Player {
   constructor (socketId, playerData) {
     this.id = socketId
     this.name = playerData.name || 'Anonymous_' + socketId
-    this.character = playerData.character || 'blue_smug_wide'
+    this.character = playerData.character || 'unknown'
     this.score = 0
     this.isReady = false
     this.isDrawing = false
