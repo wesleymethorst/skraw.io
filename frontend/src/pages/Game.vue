@@ -113,34 +113,6 @@ const route = useRoute();
 playerName.value = route.query.name || '';
 character.value = route.query.character || 'unknown';
 
-function redrawCanvas(dataArray) {
-  if (!ctx.value || !canvasRef.value) return;
-
-  // Maak het canvas eerst schoon
-  ctx.value.fillStyle = '#FFFFFF';
-  ctx.value.fillRect(0, 0, canvasRef.value.width, canvasRef.value.height);
-
-  // Herteken alle lijnen
-  dataArray.forEach(data => {
-    if (data.type === 'start') {
-      // Begin een nieuw pad
-      ctx.value.beginPath();
-      ctx.value.moveTo(data.x, data.y);
-      ctx.value.lineTo(data.x, data.y);
-      ctx.value.strokeStyle = data.color;
-      ctx.value.lineWidth = data.lineWidth;
-      ctx.value.lineCap = 'round';
-      ctx.value.stroke();
-    } 
-    else if (data.type === 'draw') {
-      // Voeg een lijn toe
-      ctx.value.lineTo(data.x, data.y);
-      ctx.value.strokeStyle = data.color;
-      ctx.value.lineWidth = data.lineWidth;
-      ctx.value.stroke();
-    }
-  });
-}
 
 onMounted(() => {
   socket.emit('join_lobby', { name: playerName.value, character: character.value });
@@ -172,9 +144,7 @@ socket.on('player_ready_update', (data) => {
     players.value = data.players;
     maxPlayers.value = data.maxPlayers;
     
-    if (data.drawingData) {
-      redrawCanvas(data.drawingData);
-    }
+    // Het canvas wordt opnieuw opgebouwd in de CanvasBoard-component
   });
 
   socket.on('player_joined', (data) => {
