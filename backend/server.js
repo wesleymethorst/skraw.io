@@ -1,6 +1,7 @@
 const { Server } = require('socket.io')
 const { createServer } = require('http')
 const express = require('express')
+const axios = require('axios')
 
 const wordsByLanguage = {
   dutch: [
@@ -136,13 +137,9 @@ class GameServer {
   constructor () {
     const app = express()
     const httpServer = createServer(app)
-    // const cors = require('cors');
-    // const authRoutes = require('./auth/auth.routes');
-  
-    // app.use(cors());
-    // app.use(express.json());
-    // app.use('/auth', authRoutes);
 
+    // AI Service URL
+    this.AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:5001'
 
     this.io = new Server(httpServer, {
       cors: {
@@ -249,7 +246,7 @@ class GameServer {
         })
       })
 
-      socket.on('send_message', message => {
+      socket.on('send_message', async message => {
         if (!currentLobby) {
           socket.emit('error', { message: 'You are not in a lobby' })
           return
@@ -271,18 +268,18 @@ class GameServer {
 
         currentLobby.messages.push(msg)
 
-        // Check of het geraden woord overeenkomt
+        // 🎯 STAP 1: Check eerst of het woord EXACT klopt
         if (
           !player.hasGuessed &&
           !player.isDrawing &&
           currentLobby.currentWord &&
-          message.text.trim().toLowerCase() ===
-            currentLobby.currentWord.toLowerCase()
+          message.text.trim().toLowerCase() === currentLobby.currentWord.toLowerCase()
         ) {
+          console.log(`✅ EXACT MATCH: "${message.text}" === "${currentLobby.currentWord}" - NO AI NEEDED`)
+          
           player.hasGuessed = true
           player.score += 10
 
-          // Stuur notificatie naar iedereen
           this.io.to(currentLobby.id).emit('correct_guess', {
             playerId: socket.id,
             playerName: player.name,
@@ -292,7 +289,6 @@ class GameServer {
             players: currentLobby.getPlayersData()
           })
 
-          // Eventueel: check of alle spelers het woord geraden hebben en eindig ronde
           const allGuessed = Array.from(currentLobby.players.values()).every(
             p => p.hasGuessed || p.isDrawing
           )
@@ -300,10 +296,48 @@ class GameServer {
           if (allGuessed) {
             setTimeout(() => {
               this.endTurn(currentLobby)
-            }, 2000) // wacht 2 seconden
+            }, 2000)
           }
-        } else {
-          // Normaal bericht
+        } 
+        // 🤖 STAP 2: Alleen als het NIET exact klopt EN tijdens het spel → AI gebruiken
+        else if (
+          !player.hasGuessed &&
+          !player.isDrawing &&
+          currentLobby.currentWord &&
+          currentLobby.gameState === 'playing'
+        ) {
+          console.log(`🔍 NO EXACT MATCH: "${message.text}" !== "${currentLobby.currentWord}" - CALLING AI`)
+          
+          try {
+            const aiResponse = await axios.post(`${this.AI_SERVICE_URL}/evaluate-guess`, {
+              target_word: currentLobby.currentWord,
+              user_guess: message.text.trim()
+            })
+
+            const feedback = aiResponse.data.feedback
+            console.log(`🧠 AI FEEDBACK: "${feedback}"`)
+            
+            // Stuur het normale bericht + AI feedback
+            this.io.to(currentLobby.id).emit('new_message', msg)
+            
+            // Stuur AI feedback als aparte melding
+            this.io.to(currentLobby.id).emit('ai_feedback', {
+              playerId: socket.id,
+              playerName: player.name,
+              guess: message.text.trim(),
+              feedback: feedback,
+              timestamp: new Date().toISOString()
+            })
+            
+          } catch (error) {
+            console.error('💥 AI Service error:', error)
+            // Fallback naar normaal bericht als AI service niet beschikbaar is
+            this.io.to(currentLobby.id).emit('new_message', msg)
+          }
+        } 
+        // 💬 STAP 3: Alle andere gevallen → gewoon normaal chatbericht
+        else {
+          console.log(`💬 NORMAL MESSAGE: Not during game or from drawer`)
           this.io.to(currentLobby.id).emit('new_message', msg)
         }
       })
