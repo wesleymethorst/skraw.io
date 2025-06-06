@@ -1,19 +1,19 @@
 <template>
-  <div class="canvas-wrapper">
+  <div class="flex flex-col items-center p-2.5 gap-2.5 w-full h-full box-border">
     <!-- Toolbar bovenaan - verborgen maar neemt nog steeds ruimte in -->
-    <div class="toolbar" :class="{ hidden: !props.isCurrentDrawer }">
+    <div class="flex items-center gap-2 p-2.5 bg-gray-100 rounded-lg shadow-md flex-wrap" :class="{ 'invisible pointer-events-none': !props.isCurrentDrawer }">
       <input 
         type="color" 
         v-model="currentColor" 
-        class="color-picker"
+        class="w-15 h-8 border-2 border-gray-300 rounded-md cursor-pointer p-0 mt-2 transition-all duration-100 hover:scale-105 hover:border-gray-500"
         @change="updateCanvasColor"
       />
       
       <button 
         @click="setMode('draw')"
         :class="[
-          'tool-button',
-          mode === 'draw' && !shapeType ? 'active' : ''
+          'px-4 py-2 border border-gray-300 bg-white rounded cursor-pointer text-sm transition-all duration-200 hover:bg-gray-200',
+          mode === 'draw' && !shapeType ? 'bg-blue-500 text-white border-blue-500' : ''
         ]"
       >
         Draw
@@ -22,8 +22,8 @@
       <button 
         @click="setMode('fill')"
         :class="[
-          'tool-button',
-          mode === 'fill' ? 'active' : ''
+          'px-4 py-2 border border-gray-300 bg-white rounded cursor-pointer text-sm transition-all duration-200 hover:bg-gray-200',
+          mode === 'fill' ? 'bg-blue-500 text-white border-blue-500' : ''
         ]"
       >
         Fill
@@ -32,8 +32,8 @@
       <button 
         @click="setShape('rectangle')"
         :class="[
-          'tool-button',
-          shapeType === 'rectangle' ? 'active' : ''
+          'px-4 py-2 border border-gray-300 bg-white rounded cursor-pointer text-sm transition-all duration-200 hover:bg-gray-200',
+          shapeType === 'rectangle' ? 'bg-blue-500 text-white border-blue-500' : ''
         ]"
       >
         Rectangle
@@ -42,8 +42,8 @@
       <button 
         @click="setShape('circle')"
         :class="[
-          'tool-button',
-          shapeType === 'circle' ? 'active' : ''
+          'px-4 py-2 border border-gray-300 bg-white rounded cursor-pointer text-sm transition-all duration-200 hover:bg-gray-200',
+          shapeType === 'circle' ? 'bg-blue-500 text-white border-blue-500' : ''
         ]"
       >
         Circle
@@ -52,8 +52,8 @@
       <button 
         @click="setShape('line')"
         :class="[
-          'tool-button',
-          shapeType === 'line' ? 'active' : ''
+          'px-4 py-2 border border-gray-300 bg-white rounded cursor-pointer text-sm transition-all duration-200 hover:bg-gray-200',
+          shapeType === 'line' ? 'bg-blue-500 text-white border-blue-500' : ''
         ]"
       >
         Line
@@ -62,40 +62,40 @@
       <button 
         @click="setShape('triangle')"
         :class="[
-          'tool-button',
-          shapeType === 'triangle' ? 'active' : ''
+          'px-4 py-2 border border-gray-300 bg-white rounded cursor-pointer text-sm transition-all duration-200 hover:bg-gray-200',
+          shapeType === 'triangle' ? 'bg-blue-500 text-white border-blue-500' : ''
         ]"
       >
         Triangle
       </button>
       
-      <div class="brush-size-container">
-        <label>Brush Size:</label>
+      <div class="flex items-center gap-2 px-2.5">
+        <label class="text-sm text-gray-600 whitespace-nowrap">Brush Size:</label>
         <input 
           type="range" 
           v-model="brushSize"
           min="1" 
           max="50" 
-          class="brush-slider"
+          class="w-25 cursor-pointer"
           @input="updateBrushSize"
         />
       </div>
       
       <button 
-        class="tool-button" 
+        class="px-4 py-2 border border-gray-300 bg-white rounded cursor-pointer text-sm transition-all duration-200 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed" 
         @click="undo"
         :disabled="undoStack.length === 0"
       >
         Undo
       </button>
       <button 
-        class="tool-button" 
+        class="px-4 py-2 border border-gray-300 bg-white rounded cursor-pointer text-sm transition-all duration-200 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed" 
         @click="redo"
         :disabled="redoStack.length === 0"
       >
         Redo
       </button>
-      <button class="tool-button clear-btn" @click="clearCanvas">
+      <button class="px-4 py-2 border border-red-500 bg-red-500 text-white rounded cursor-pointer text-sm transition-all duration-200 hover:bg-red-600" @click="clearCanvas">
         Clear
       </button>
     </div>
@@ -105,16 +105,16 @@
       width="800"
       height="600"
       @mousedown="handleMouseDown"
-      class="drawing-canvas"
+      class="border-2 border-gray-400 bg-white shadow-lg touch-none rounded-sm"
     ></canvas>
 
-    <div class="color-palette" :class="{ hidden: !props.isCurrentDrawer }">
+    <div class="grid grid-cols-8 gap-1 justify-center items-center p-3 bg-white bg-opacity-90 rounded-lg flex-shrink-0 max-w-80 shadow-md md:grid-cols-6 md:max-w-60 md:gap-0.5 md:p-2 sm:grid-cols-4 sm:max-w-40" :class="{ 'invisible pointer-events-none': !props.isCurrentDrawer }">
       <button 
         v-for="(color, index) in colors" 
         :key="index"
-        class="color-button"
+        class="w-7 h-7 rounded border border-gray-300 cursor-pointer transition-all duration-100 relative hover:scale-110 hover:border-gray-500 hover:z-10 md:w-6 md:h-6 sm:w-5 sm:h-5"
         :style="{ backgroundColor: color }"
-        :class="{ active: color === currentColor }"
+        :class="{ 'scale-115 border-2 border-gray-800 z-10': color === currentColor }"
         @click="selectColor(color)"
       ></button>
     </div>
@@ -595,186 +595,5 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.canvas-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 10px;
-  gap: 10px;
-  width: 100%;
-  height: 100%;
-  box-sizing: border-box;
-}
-
-.toolbar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px;
-  background-color: #f5f5f5;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  flex-wrap: wrap;
-}
-
-.toolbar.hidden {
-  visibility: hidden;
-  pointer-events: none;
-}
-
-.tool-button {
-  padding: 8px 16px;
-  border: 1px solid #ccc;
-  background-color: #fff;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s;
-}
-
-.tool-button:hover:not(:disabled) {
-  background-color: #e0e0e0;
-}
-
-.tool-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.tool-button.active {
-  background-color: #007bff;
-  color: white;
-  border-color: #007bff;
-}
-
-.tool-button.clear-btn {
-  background-color: #dc3545;
-  color: white;
-  border-color: #dc3545;
-}
-
-.tool-button.clear-btn:hover {
-  background-color: #c82333;
-}
-
-.color-picker {
-  grid-column: span 2;
-  width: 60px;
-  height: 32px;
-  border: 2px solid #ccc;
-  border-radius: 6px;
-  cursor: pointer;
-  padding: 0;
-  margin-top: 8px;
-  transition: all 0.1s;
-  justify-self: center;
-}
-
-.color-picker:hover {
-  transform: scale(1.05);
-  border-color: #999;
-}
-
-.brush-size-container {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 10px;
-}
-
-.brush-size-container label {
-  font-size: 14px;
-  color: #555;
-  white-space: nowrap;
-}
-
-.brush-slider {
-  width: 100px;
-  cursor: pointer;
-}
-
-.drawing-canvas {
-  border: 1px solid #ccc;
-  background-color: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  touch-action: none;
-}
-
-.color-palette {
-  display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  gap: 4px;
-  justify-content: center;
-  align-items: center;
-  padding: 12px;
-  background-color: rgba(255, 255, 255, 0.9);
-  border-radius: 8px;
-  flex-shrink: 0;
-  max-width: 320px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.color-palette.hidden {
-  visibility: hidden;
-  pointer-events: none;
-}
-
-.color-button {
-  width: 28px;
-  height: 28px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-  cursor: pointer;
-  transition: all 0.1s;
-  position: relative;
-}
-
-.color-button.active {
-  transform: scale(1.15);
-  border: 2px solid #333;
-  z-index: 1;
-}
-
-.color-button:hover {
-  transform: scale(1.1);
-  border-color: #999;
-  z-index: 1;
-}
-
-/* Responsive adjustments voor uitgebreide palette */
-@media (max-width: 768px) {
-  .color-palette {
-    grid-template-columns: repeat(6, 1fr);
-    max-width: 240px;
-    gap: 3px;
-    padding: 8px;
-  }
-  
-  .color-button {
-    width: 24px;
-    height: 24px;
-  }
-  
-  .color-picker {
-    width: 50px;
-    height: 28px;
-  }
-}
-
-@media (max-width: 480px) {
-  .color-palette {
-    grid-template-columns: repeat(4, 1fr);
-    max-width: 160px;
-  }
-  
-  .color-button {
-    width: 20px;
-    height: 20px;
-  }
-  
-  .color-picker {
-    width: 44px;
-    height: 24px;
-  }
-}
+/* All styles are now handled by Tailwind CSS classes */
 </style>

@@ -11,7 +11,8 @@
           :players="players" 
           :character="character"
           :yourId="socket?.id" 
-          :socket="socket" 
+          :socket="socket"
+          :gameState="gameState"
         />
       </aside>
 
@@ -32,23 +33,13 @@
               <span v-else class="text-[#654321] font-bold">Current word: _ _ _ _ _</span>
             </div>
             <div class="bg-[#f5ecc8d9] px-3 py-1.5 rounded-md border border-[#d4c19c] shadow-sm">
-              <span class="text-[#654321] font-bold">Guess: <span class="text-[#A0522D]">_ _ _</span></span>
-            </div>
-            <div class="bg-[#f5ecc8d9] px-3 py-1.5 rounded-md border border-[#d4c19c] shadow-sm">
               <span class="text-[#654321] font-bold">Timer: <span class="text-[#8B4513]">60s</span></span>
             </div>
           </div>
         </header>
 
         <!-- Canvas area -->
-        <section class="bg-white shadow-inner flex flex-col justify-start items-center flex-grow min-h-0 overflow-hidden border-4 border-[#d4c19c] m-2 rounded-lg relative" style="grid-area: canvas;">
-          <!-- Canvas overlay for non-drawers - moved to top -->
-          <div v-if="!isCurrentDrawer" class="absolute top-4 left-1/2 transform -translate-x-1/2 z-10">
-            <div class="bg-[#f5ecc8bf] px-6 py-3 rounded-lg shadow-lg border-2 border-[#d4c19c]">
-              <p class="text-[#8B4513] font-bold text-lg">Guess what's being drawn!</p>
-            </div>
-          </div>
-          
+        <section class="bg-gray-100 shadow-inner flex flex-col justify-start items-center flex-grow min-h-0 overflow-hidden border-4 border-[#d4c19c] m-2 rounded-lg relative" style="grid-area: canvas;">
           <div class="w-full h-full relative">
             <CanvasBoard 
               :socket="socket" 
@@ -109,6 +100,7 @@ const maxPlayers = ref(4);
 const character = ref('');
 const currentWord = ref('');
 const isCurrentDrawer = ref(false);
+const gameState = ref('waiting'); // 'waiting' or 'playing'
 const route = useRoute();
 playerName.value = route.query.name || '';
 character.value = route.query.character || 'unknown';
@@ -118,8 +110,17 @@ onMounted(() => {
   socket.emit('join_lobby', { name: playerName.value, character: character.value });
 
 socket.on('correct_guess', (data) => {
-  isCurrentDrawer.value = false;
-  currentWord.value = '';
+  // Alleen de huidige tekenaar status resetten als IK degene ben die het woord geraden heeft
+  // Of als ALLE spelers het woord geraden hebben (dan is de ronde voorbij)
+  if (data.playerId === socket?.id) {
+    // Ik heb het woord geraden, dus ik ben geen tekenaar meer (als ik dat al was)
+    isCurrentDrawer.value = false;
+    currentWord.value = '';
+  }
+  // Update de spelers data om te laten zien wie het geraden heeft
+  if (data.players) {
+    players.value = data.players;
+  }
 });
 socket.on('your_word', (data) => {
   currentWord.value = data.word;
@@ -127,7 +128,27 @@ socket.on('your_word', (data) => {
 });
 
 socket.on('game_started', (data) => {
-  isCurrentDrawer.value = false
+  gameState.value = 'playing'
+  // Update players data with drawing status
+  if (data.players) {
+    players.value = data.players;
+    // Check if current player is the drawer
+    const currentPlayer = data.players.find(p => p.id === socket?.id);
+    isCurrentDrawer.value = currentPlayer ? currentPlayer.isDrawing : false;
+  }
+})
+
+socket.on('new_round', (data) => {
+  gameState.value = 'playing'
+  // Reset current word for everyone
+  currentWord.value = ''
+  // Update players data with new drawing status
+  if (data.players) {
+    players.value = data.players;
+    // Check if current player is the new drawer
+    const currentPlayer = data.players.find(p => p.id === socket?.id);
+    isCurrentDrawer.value = currentPlayer ? currentPlayer.isDrawing : false;
+  }
 })
 
 socket.on('player_ready_update', (data) => {
@@ -144,7 +165,23 @@ socket.on('player_ready_update', (data) => {
     players.value = data.players;
     maxPlayers.value = data.maxPlayers;
     
+    // Check if game is already in progress based on players status
+    const anyPlayerDrawing = data.players.some(p => p.isDrawing);
+    if (anyPlayerDrawing) {
+      gameState.value = 'playing';
+      // Check if current player is the drawer
+      const currentPlayer = data.players.find(p => p.id === socket?.id);
+      isCurrentDrawer.value = currentPlayer ? currentPlayer.isDrawing : false;
+    } else {
+      gameState.value = 'waiting';
+      isCurrentDrawer.value = false;
+    }
+    
     // Het canvas wordt opnieuw opgebouwd in de CanvasBoard-component
+  });
+
+  socket.on('player_joined', (data) => {
+    players.value = data.players;
   });
 
   socket.on('player_joined', (data) => {
@@ -153,6 +190,31 @@ socket.on('player_ready_update', (data) => {
 
   socket.on('player_left', (data) => {
     players.value = data.players;
+    
+    // Update game state if server provides it
+    if (data.gameState) {
+      gameState.value = data.gameState;
+    }
+    
+    // If only one player left, go back to waiting state
+    if (data.players.length <= 1) {
+      gameState.value = 'waiting';
+      isCurrentDrawer.value = false;
+      currentWord.value = '';
+    }
+  });
+
+  // Handle game ended events (e.g. due to insufficient players after disconnect)
+  socket.on('game_ended', (data) => {
+    gameState.value = data.gameState || 'waiting';
+    isCurrentDrawer.value = false;
+    currentWord.value = '';
+    
+    // Show notification to user about why game ended
+    if (data.message) {
+      console.log('Game ended:', data.message);
+      // You could show a toast notification or alert here
+    }
   });
 });
 </script>

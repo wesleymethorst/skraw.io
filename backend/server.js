@@ -79,7 +79,6 @@ class Lobby {
     return words[randomIndex];
   }
 
-
   removePlayer (socketId) {
     return this.players.delete(socketId)
   }
@@ -110,7 +109,8 @@ class Lobby {
       character: player.character,
       score: player.score,
       isReady: player.isReady,
-      isDrawing: player.isDrawing
+      isDrawing: player.isDrawing,
+      hasGuessed: player.hasGuessed
     }))
   }
 
@@ -186,8 +186,9 @@ class GameServer {
   }
 
   findAvailableLobby () {
+    // Zoek naar een lobby die niet vol is en in de 'waiting' staat
     for (const lobby of this.lobbies.values()) {
-      if (!lobby.isFull()) {
+      if (!lobby.isFull() && lobby.gameState === 'waiting') {
         return lobby
       }
     }
@@ -220,6 +221,7 @@ class GameServer {
           socket.emit('error', { message: 'You are already in a lobby' })
           return
         }
+
 
         const lobby = this.findAvailableLobby()
         currentLobby = lobby
@@ -269,7 +271,7 @@ class GameServer {
 
         currentLobby.messages.push(msg)
 
-        // Check of het geraden woord overeenkomt met het geheime woord
+        // Check of het geraden woord overeenkomt
         if (
           !player.hasGuessed &&
           !player.isDrawing &&
@@ -278,7 +280,7 @@ class GameServer {
             currentLobby.currentWord.toLowerCase()
         ) {
           player.hasGuessed = true
-          player.score += 10 // of een andere scorewaarde
+          player.score += 10
 
           // Stuur notificatie naar iedereen
           this.io.to(currentLobby.id).emit('correct_guess', {
@@ -368,16 +370,42 @@ class GameServer {
       })
 
       socket.on('disconnect', () => {
-
         if (currentLobby) {
-          // Verwijder speler eerst uit de lobby
+          const disconnectedPlayer = currentLobby.players.get(socket.id)
+          
+          // Verwijder speler uit de lobby
           currentLobby.removePlayer(socket.id)
+
+          // Als het spel bezig was en er zijn nu te weinig spelers (minder dan 2)
+          if (currentLobby.gameState === 'playing' && currentLobby.getPlayerCount() < 2) {
+            // Reset de lobby naar waiting state
+            currentLobby.gameState = 'waiting'
+            currentLobby.currentWord = null
+            currentLobby.drawingHistory = []
+            currentLobby.drawingData = []
+            
+            // Reset alle speler states
+            currentLobby.players.forEach(player => {
+              player.isReady = false
+              player.isDrawing = false
+              player.hasGuessed = false
+            })
+
+            // Inform remaining players that game was ended due to insufficient players
+            this.io.to(currentLobby.id).emit('game_ended', {
+              reason: 'insufficient_players',
+              message: 'Game ended due to insufficient players',
+              gameState: 'waiting'
+            })
+          }
 
           // Stuur update naar alle clients in de lobby
           this.io.to(currentLobby.id).emit('player_left', {
             playerId: socket.id,
+            playerName: disconnectedPlayer?.name || 'Unknown Player',
             players: currentLobby.getPlayersData(),
-            playerCount: currentLobby.getPlayerCount()
+            playerCount: currentLobby.getPlayerCount(),
+            gameState: currentLobby.gameState
           })
 
           // Verwijder lobby als deze leeg is
@@ -402,7 +430,7 @@ class GameServer {
 
     if (drawer) {
       drawer.isDrawing = true
-      const word = lobby.getRandomWord(); // Gebruik de nieuwe getRandomWord functie
+      const word = lobby.getRandomWord();
       lobby.currentWord = word
 
       this.io.to(lobby.id).emit('game_started', {
