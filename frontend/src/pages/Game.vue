@@ -29,7 +29,10 @@
           <div class="flex gap-6 text-sm">
             <div class="bg-[#f5ecc8d9] px-3 py-1.5 rounded-md border border-[#d4c19c] shadow-sm">
               <span v-if="currentWord" class="text-[#654321] font-bold">Your word: <span class="text-[#8B4513]">{{ currentWord }}</span></span>
-              <span v-else class="text-[#654321] font-bold">Current word:</span>
+              <span v-else class="text-[#654321] font-bold">Current word: _ _ _ _ _</span>
+            </div>
+            <div class="bg-[#f5ecc8d9] px-3 py-1.5 rounded-md border border-[#d4c19c] shadow-sm">
+              <span class="text-[#654321] font-bold">Guess: <span class="text-[#A0522D]">_ _ _</span></span>
             </div>
             <div class="bg-[#f5ecc8d9] px-3 py-1.5 rounded-md border border-[#d4c19c] shadow-sm">
               <span class="text-[#654321] font-bold">Timer: <span class="text-[#8B4513]">60s</span></span>
@@ -40,6 +43,11 @@
         <!-- Canvas area -->
         <section class="bg-white shadow-inner flex flex-col justify-start items-center flex-grow min-h-0 overflow-hidden border-4 border-[#d4c19c] m-2 rounded-lg relative" style="grid-area: canvas;">
           <!-- Canvas overlay for non-drawers - moved to top -->
+          <div v-if="!isCurrentDrawer" class="absolute top-4 left-1/2 transform -translate-x-1/2 z-10">
+            <div class="bg-[#f5ecc8bf] px-6 py-3 rounded-lg shadow-lg border-2 border-[#d4c19c]">
+              <p class="text-[#8B4513] font-bold text-lg">Guess what's being drawn!</p>
+            </div>
+          </div>
           
           <div class="w-full h-full relative">
             <CanvasBoard 
@@ -110,9 +118,8 @@ onMounted(() => {
   socket.emit('join_lobby', { name: playerName.value, character: character.value });
 
 socket.on('correct_guess', (data) => {
-  // Toon het geraden woord aan alle spelers
-  currentWord.value = data.word;
   isCurrentDrawer.value = false;
+  currentWord.value = '';
 });
 socket.on('your_word', (data) => {
   currentWord.value = data.word;
@@ -161,6 +168,7 @@ socket.on('player_ready_update', (data) => {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  overflow: hidden;
   font-family: 'Comic Neue', sans-serif;
 }
 
@@ -178,6 +186,7 @@ html, body, #app {
   margin: 0;
   padding: 0;
   height: 100%;
+  overflow: hidden;
 }
 
 /* Textarea styling in rightbar - updated for new theme */
