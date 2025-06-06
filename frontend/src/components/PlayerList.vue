@@ -40,7 +40,7 @@
           <button 
             v-if="!player.isReady && player.id === yourId" 
             @click="toggleReady" 
-            class="px-3 py-1.5 bg-gradient-to-br from-green-600 to-green-700 text-white border-none rounded-md cursor-pointer text-xs font-bold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:from-green-700 hover:to-green-800 active:translate-y-0"
+            class="px-3 py-1.5 bg-gradient-to-br from-green-600 to-green-700 text-white border-none rounded-md cursor-pointer text-xs font-bold transition-colors duration-200 hover:from-green-700 hover:to-green-800"
           >
             Ready Up!
           </button>

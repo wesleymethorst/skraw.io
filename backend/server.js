@@ -285,6 +285,7 @@ class GameServer {
             playerId: socket.id,
             playerName: player.name,
             text: 'heeft het woord geraden!',
+            word: currentLobby.currentWord,
             score: player.score,
             players: currentLobby.getPlayersData()
           })

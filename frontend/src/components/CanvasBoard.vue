@@ -1,122 +1,132 @@
 <template>
-  <div class="canvas-wrapper">
-    <!-- Toolbar bovenaan - verborgen maar neemt nog steeds ruimte in -->
-    <div class="toolbar" :class="{ hidden: !props.isCurrentDrawer }">
-      <input 
-        type="color" 
-        v-model="currentColor" 
-        class="color-picker"
-        @change="updateCanvasColor"
-      />
-      
-      <button 
-        @click="setMode('draw')"
-        :class="[
-          'tool-button',
-          mode === 'draw' && !shapeType ? 'active' : ''
-        ]"
-      >
-        Draw
-      </button>
-      
-      <button 
-        @click="setMode('fill')"
-        :class="[
-          'tool-button',
-          mode === 'fill' ? 'active' : ''
-        ]"
-      >
-        Fill
-      </button>
-      
-      <button 
-        @click="setShape('rectangle')"
-        :class="[
-          'tool-button',
-          shapeType === 'rectangle' ? 'active' : ''
-        ]"
-      >
-        Rectangle
-      </button>
-      
-      <button 
-        @click="setShape('circle')"
-        :class="[
-          'tool-button',
-          shapeType === 'circle' ? 'active' : ''
-        ]"
-      >
-        Circle
-      </button>
-      
-      <button 
-        @click="setShape('line')"
-        :class="[
-          'tool-button',
-          shapeType === 'line' ? 'active' : ''
-        ]"
-      >
-        Line
-      </button>
-      
-      <button 
-        @click="setShape('triangle')"
-        :class="[
-          'tool-button',
-          shapeType === 'triangle' ? 'active' : ''
-        ]"
-      >
-        Triangle
-      </button>
-      
-      <div class="brush-size-container">
-        <label>Brush Size:</label>
-        <input 
-          type="range" 
-          v-model="brushSize"
-          min="1" 
-          max="50" 
-          class="brush-slider"
-          @input="updateBrushSize"
-        />
-      </div>
-      
-      <button 
-        class="tool-button" 
-        @click="undo"
-        :disabled="undoStack.length === 0"
-      >
-        Undo
-      </button>
-      <button 
-        class="tool-button" 
-        @click="redo"
-        :disabled="redoStack.length === 0"
-      >
-        Redo
-      </button>
-      <button class="tool-button clear-btn" @click="clearCanvas">
-        Clear
-      </button>
+  <div class="flex flex-col w-full h-full">
+    <!-- Canvas neemt de volledige beschikbare ruimte -->
+    <div class="flex-1 flex items-center justify-center p-4">
+      <canvas 
+        ref="canvasRef"
+        width="800"
+        height="600"
+        @mousedown="handleMouseDown"
+        class="border border-gray-300 bg-white shadow-md touch-none max-w-full max-h-full"
+      ></canvas>
     </div>
 
-    <canvas 
-      ref="canvasRef"
-      width="800"
-      height="600"
-      @mousedown="handleMouseDown"
-      class="drawing-canvas"
-    ></canvas>
+    <!-- Toolbar onderaan - gecombineerd met kleur palette -->
+    <div class="flex flex-col gap-2 p-4 bg-gray-100 border-t-2 border-gray-200 shadow-lg" :class="{ 'invisible pointer-events-none': !props.isCurrentDrawer }">
+      
+      <!-- Eerste rij: Tools en instellingen -->
+      <div class="flex items-center justify-center gap-2 flex-wrap">
+        <input 
+          type="color" 
+          v-model="currentColor" 
+          class="w-12 h-8 border-2 border-gray-300 rounded-md cursor-pointer p-0 transition-all duration-100 hover:scale-105 hover:border-gray-600"
+          @change="updateCanvasColor"
+        />
+        
+        <button 
+          @click="setMode('draw')"
+          :class="[
+            'px-3 py-2 border border-gray-300 bg-white rounded cursor-pointer text-sm transition-all duration-200 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed',
+            mode === 'draw' && !shapeType ? 'bg-blue-600 text-white border-blue-600' : ''
+          ]"
+        >
+          Draw
+        </button>
+        
+        <button 
+          @click="setMode('fill')"
+          :class="[
+            'px-3 py-2 border border-gray-300 bg-white rounded cursor-pointer text-sm transition-all duration-200 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed',
+            mode === 'fill' ? 'bg-blue-600 text-white border-blue-600' : ''
+          ]"
+        >
+          Fill
+        </button>
+        
+        <button 
+          @click="setShape('rectangle')"
+          :class="[
+            'px-3 py-2 border border-gray-300 bg-white rounded cursor-pointer text-sm transition-all duration-200 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed',
+            shapeType === 'rectangle' ? 'bg-blue-600 text-white border-blue-600' : ''
+          ]"
+        >
+          Rectangle
+        </button>
+        
+        <button 
+          @click="setShape('circle')"
+          :class="[
+            'px-3 py-2 border border-gray-300 bg-white rounded cursor-pointer text-sm transition-all duration-200 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed',
+            shapeType === 'circle' ? 'bg-blue-600 text-white border-blue-600' : ''
+          ]"
+        >
+          Circle
+        </button>
+        
+        <button 
+          @click="setShape('line')"
+          :class="[
+            'px-3 py-2 border border-gray-300 bg-white rounded cursor-pointer text-sm transition-all duration-200 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed',
+            shapeType === 'line' ? 'bg-blue-600 text-white border-blue-600' : ''
+          ]"
+        >
+          Line
+        </button>
+        
+        <button 
+          @click="setShape('triangle')"
+          :class="[
+            'px-3 py-2 border border-gray-300 bg-white rounded cursor-pointer text-sm transition-all duration-200 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed',
+            shapeType === 'triangle' ? 'bg-blue-600 text-white border-blue-600' : ''
+          ]"
+        >
+          Triangle
+        </button>
+        
+        <div class="flex items-center gap-2 px-2">
+          <label class="text-sm text-gray-600 whitespace-nowrap">Brush:</label>
+          <input 
+            type="range" 
+            v-model="brushSize"
+            min="1" 
+            max="50" 
+            class="w-20 cursor-pointer"
+            @input="updateBrushSize"
+          />
+        </div>
+        
+        <button 
+          class="px-3 py-2 border border-gray-300 bg-white rounded cursor-pointer text-sm transition-all duration-200 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed" 
+          @click="undo"
+          :disabled="undoStack.length === 0"
+        >
+          Undo
+        </button>
+        <button 
+          class="px-3 py-2 border border-gray-300 bg-white rounded cursor-pointer text-sm transition-all duration-200 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed" 
+          @click="redo"
+          :disabled="redoStack.length === 0"
+        >
+          Redo
+        </button>
+        <button class="px-3 py-2 bg-red-600 text-white border border-red-600 rounded cursor-pointer text-sm transition-all duration-200 hover:bg-red-700" @click="clearCanvas">
+          Clear
+        </button>
+      </div>
 
-    <div class="color-palette" :class="{ hidden: !props.isCurrentDrawer }">
-      <button 
-        v-for="(color, index) in colors" 
-        :key="index"
-        class="color-button"
-        :style="{ backgroundColor: color }"
-        :class="{ active: color === currentColor }"
-        @click="selectColor(color)"
-      ></button>
+      <!-- Tweede rij: Kleur palette -->
+      <div class="flex justify-center">
+        <div class="grid grid-cols-8 gap-1 p-2 bg-white rounded-lg shadow-sm">
+          <button 
+            v-for="(color, index) in colors" 
+            :key="index"
+            class="w-6 h-6 rounded border border-gray-300 cursor-pointer transition-all duration-100 relative hover:scale-110 hover:border-gray-600 hover:z-10"
+            :style="{ backgroundColor: color }"
+            :class="{ 'scale-110 border-2 border-gray-800 z-10': color === currentColor }"
+            @click="selectColor(color)"
+          ></button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -135,7 +145,7 @@ const emit = defineEmits(['color-change']);
 const canvasRef = ref(null);
 let ctx = null;
 
-// Drawing state - geïmporteerd van CanvasNieuw
+// Drawing state
 const currentColor = ref('#000000');
 const brushSize = ref(5);
 const mode = ref('draw');
@@ -152,11 +162,10 @@ const redoStack = ref([]);
 
 // Uitgebreide color palette
 const colors = [
-  // Basis kleuren (eerste rij)
   '#000000', '#FFFFFF', '#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF',
 ];
 
-// Utility functions van CanvasNieuw
+// Utility functions
 const saveState = () => {
   undoStack.value.push(ctx.getImageData(0, 0, canvasRef.value.width, canvasRef.value.height));
   if (undoStack.value.length > 50) undoStack.value.shift();
@@ -168,7 +177,6 @@ const undo = () => {
   redoStack.value.push(ctx.getImageData(0, 0, canvasRef.value.width, canvasRef.value.height));
   ctx.putImageData(undoStack.value.pop(), 0, 0);
   
-  // Socket - stuur undo commando naar andere clients (alleen als je de tekenaar bent)
   if (props.socket && props.isCurrentDrawer) {
     props.socket.emit('canvas-action', {
       type: 'undo'
@@ -181,7 +189,6 @@ const redo = () => {
   undoStack.value.push(ctx.getImageData(0, 0, canvasRef.value.width, canvasRef.value.height));
   ctx.putImageData(redoStack.value.pop(), 0, 0);
   
-  // Socket - stuur redo naar andere clients
   if (props.socket) {
     props.socket.emit('canvas-action', {
       type: 'redo',
@@ -194,12 +201,20 @@ const clearCanvas = () => {
   saveState();
   ctx.clearRect(0, 0, canvasRef.value.width, canvasRef.value.height);
   
-  // Socket - stuur clear naar andere clients
   if (props.socket) {
     props.socket.emit('canvas-action', {
       type: 'clear'
     });
   }
+};
+
+const updateCanvasColor = () => {
+  ctx.fillStyle = ctx.strokeStyle = currentColor.value;
+  emit('color-change', currentColor.value);
+};
+
+const updateBrushSize = () => {
+  ctx.lineWidth = brushSize.value;
 };
 
 const setMode = (newMode) => {
@@ -208,32 +223,105 @@ const setMode = (newMode) => {
 };
 
 const setShape = (shape) => {
+  mode.value = 'draw';
   shapeType.value = shape;
-  mode.value = 'shape';
-};
-
-const updateCanvasColor = () => {
-  ctx.fillStyle = ctx.strokeStyle = currentColor.value;
-};
-
-const updateBrushSize = () => {
-  ctx.lineWidth = brushSize.value;
 };
 
 const selectColor = (color) => {
   currentColor.value = color;
   updateCanvasColor();
-  emit('color-change', color);
 };
 
-// Advanced drawing functions van CanvasNieuw
-const hexToRgb = (hex) => {
-  hex = hex.replace('#', '');
-  return {
-    r: parseInt(hex.substring(0, 2), 16),
-    g: parseInt(hex.substring(2, 4), 16),
-    b: parseInt(hex.substring(4, 6), 16)
-  };
+const handleMouseDown = (e) => {
+  if (!props.isCurrentDrawer) return;
+  
+  const rect = canvasRef.value.getBoundingClientRect();
+  startX.value = e.clientX - rect.left;
+  startY.value = e.clientY - rect.top;
+  lastX.value = startX.value;
+  lastY.value = startY.value;
+  
+  saveState();
+  drawing.value = true;
+  
+  if (shapeType.value) {
+    isDrawingShape.value = true;
+    previewImage.value = ctx.getImageData(0, 0, canvasRef.value.width, canvasRef.value.height);
+  } else if (mode.value === 'draw') {
+    ctx.beginPath();
+    ctx.moveTo(startX.value, startY.value);
+  } else if (mode.value === 'fill') {
+    floodFill(startX.value, startY.value, currentColor.value);
+  }
+  
+  document.addEventListener('mousemove', handleMouseMove);
+  document.addEventListener('mouseup', handleMouseUp);
+};
+
+const handleMouseMove = (e) => {
+  if (!drawing.value || !props.isCurrentDrawer) return;
+  
+  const rect = canvasRef.value.getBoundingClientRect();
+  const currentX = e.clientX - rect.left;
+  const currentY = e.clientY - rect.top;
+  
+  if (isDrawingShape.value) {
+    ctx.putImageData(previewImage.value, 0, 0);
+    drawShape(startX.value, startY.value, currentX, currentY);
+  } else if (mode.value === 'draw') {
+    ctx.lineWidth = brushSize.value;
+    ctx.strokeStyle = currentColor.value;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    
+    ctx.lineTo(currentX, currentY);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(currentX, currentY);
+  }
+  
+  lastX.value = currentX;
+  lastY.value = currentY;
+};
+
+const handleMouseUp = () => {
+  if (!drawing.value) return;
+  
+  drawing.value = false;
+  isDrawingShape.value = false;
+  
+  document.removeEventListener('mousemove', handleMouseMove);
+  document.removeEventListener('mouseup', handleMouseUp);
+};
+
+const drawShape = (x1, y1, x2, y2) => {
+  ctx.strokeStyle = currentColor.value;
+  ctx.lineWidth = brushSize.value;
+  ctx.lineCap = 'round';
+  
+  ctx.beginPath();
+  
+  switch (shapeType.value) {
+    case 'rectangle':
+      ctx.rect(x1, y1, x2 - x1, y2 - y1);
+      break;
+    case 'circle':
+      const radius = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+      ctx.arc(x1, y1, radius, 0, 2 * Math.PI);
+      break;
+    case 'line':
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      break;
+    case 'triangle':
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.lineTo(x1 - (x2 - x1), y2);
+      ctx.closePath();
+      break;
+  }
+  
+  ctx.stroke();
 };
 
 const floodFill = (x, y, fillColor) => {
@@ -264,191 +352,6 @@ const floodFill = (x, y, fillColor) => {
   ctx.putImageData(imgData, 0, 0);
 };
 
-const drawLineSmooth = (x1, y1, x2, y2, radius, color) => {
-  const dx = x2 - x1;
-  const dy = y2 - y1;
-  const distance = Math.hypot(dx, dy);
-  const steps = Math.ceil(distance / (radius / 2));
-  ctx.fillStyle = color;
-  for (let i = 0; i <= steps; i++) {
-    const t = i / steps;
-    const cx = x1 + dx * t;
-    const cy = y1 + dy * t;
-    ctx.beginPath();
-    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-    ctx.fill();
-  }
-};
-
-const drawRotatedTriangle = (tipX, tipY, baseCenterX, baseCenterY, baseLength) => {
-  const vx = baseCenterX - tipX;
-  const vy = baseCenterY - tipY;
-  const height = Math.hypot(vx, vy);
-  if (height === 0) return;
-
-  const ux = vx / height;
-  const uy = vy / height;
-  const perpX = -uy;
-  const perpY = ux;
-  const halfBase = baseLength / 2;
-
-  const baseLeftX = baseCenterX + perpX * halfBase;
-  const baseLeftY = baseCenterY + perpY * halfBase;
-  const baseRightX = baseCenterX - perpX * halfBase;
-  const baseRightY = baseCenterY - perpY * halfBase;
-
-  ctx.beginPath();
-  ctx.moveTo(tipX, tipY);
-  ctx.lineTo(baseLeftX, baseLeftY);
-  ctx.lineTo(baseRightX, baseRightY);
-  ctx.closePath();
-  ctx.fill();
-};
-
-// Event handlers met socket integratie
-const handleMouseDown = (e) => {
-  if (!props.isCurrentDrawer) return;
-  
-  const rect = canvasRef.value.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
-
-  if (mode.value === 'fill') {
-    saveState();
-    floodFill(Math.floor(x), Math.floor(y), hexToRgb(currentColor.value));
-    
-    // Socket - stuur fill actie
-    if (props.socket) {
-      props.socket.emit('draw', {
-        type: 'fill',
-        x: Math.floor(x),
-        y: Math.floor(y),
-        color: currentColor.value
-      });
-    }
-  } else if (mode.value === 'draw') {
-    saveState();
-    drawing.value = true;
-    startX.value = lastX.value = x;
-    startY.value = lastY.value = y;
-    ctx.fillStyle = ctx.strokeStyle = currentColor.value;
-    
-    // Socket - stuur start draw
-    if (props.socket) {
-      props.socket.emit('draw', {
-        type: 'start',
-        x: x,
-        y: y,
-        color: currentColor.value,
-        brushSize: brushSize.value,
-        mode: 'draw'
-      });
-    }
-  } else if (mode.value === 'shape') {
-    saveState();
-    drawing.value = true;
-    isDrawingShape.value = true;
-    startX.value = x;
-    startY.value = y;
-    previewImage.value = ctx.getImageData(0, 0, canvasRef.value.width, canvasRef.value.height);
-  }
-};
-
-const handleMouseMove = (e) => {
-  if (!drawing.value || !props.isCurrentDrawer) return;
-  
-  const rect = canvasRef.value.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
-
-  if (mode.value === 'draw') {
-    drawLineSmooth(lastX.value, lastY.value, x, y, brushSize.value / 2, currentColor.value);
-    
-    // Socket - stuur draw movement met lastX en lastY voor vloeiende lijnen
-    if (props.socket) {
-      props.socket.emit('draw', {
-        type: 'draw',
-        x: x,
-        y: y,
-        lastX: lastX.value,
-        lastY: lastY.value,
-        color: currentColor.value,
-        brushSize: brushSize.value,
-        mode: 'draw'
-      });
-    }
-    
-    lastX.value = x;
-    lastY.value = y;
-  } else if (mode.value === 'shape' && isDrawingShape.value) {
-    ctx.putImageData(previewImage.value, 0, 0);
-    ctx.fillStyle = ctx.strokeStyle = currentColor.value;
-    ctx.lineWidth = brushSize.value;
-
-    switch (shapeType.value) {
-      case 'rectangle':
-        ctx.fillRect(startX.value, startY.value, x - startX.value, y - startY.value);
-        break;
-      case 'circle':
-        ctx.beginPath();
-        ctx.ellipse(
-          startX.value + (x - startX.value) / 2,
-          startY.value + (y - startY.value) / 2,
-          Math.abs((x - startX.value) / 2),
-          Math.abs((y - startY.value) / 2),
-          0, 0, 2 * Math.PI
-        );
-        ctx.fill();
-        break;
-      case 'line':
-        ctx.beginPath();
-        ctx.moveTo(startX.value, startY.value);
-        ctx.lineTo(x, y);
-        ctx.stroke();
-        break;
-      case 'triangle':
-        const tipX = startX.value;
-        const tipY = startY.value;
-        const dx = x - tipX;
-        const dy = y - tipY;
-        const height = Math.hypot(dx, dy);
-        if (height === 0) break;
-        const baseCenterX = tipX + dx * 0.6;
-        const baseCenterY = tipY + dy * 0.6;
-        const length = height;
-        const baseLength = length / 2 + brushSize.value * 3;
-        drawRotatedTriangle(tipX, tipY, baseCenterX, baseCenterY, baseLength);
-        break;
-    }
-  }
-};
-
-const handleMouseUp = (e) => {
-  if (!props.isCurrentDrawer) return;
-  
-  // Als we een shape aan het tekenen waren, stuur final shape naar socket
-  if (mode.value === 'shape' && isDrawingShape.value && props.socket) {
-    const rect = canvasRef.value.getBoundingClientRect();
-    const endX = e ? e.clientX - rect.left : lastX.value;
-    const endY = e ? e.clientY - rect.top : lastY.value;
-    
-    props.socket.emit('draw', {
-      type: 'shape',
-      shapeType: shapeType.value,
-      startX: startX.value,
-      startY: startY.value,
-      endX: endX,
-      endY: endY,
-      color: currentColor.value,
-      brushSize: brushSize.value
-    });
-  }
-  
-  drawing.value = false;
-  isDrawingShape.value = false;
-};
-
-// Socket event listeners
 onMounted(() => {
   ctx = canvasRef.value.getContext('2d');
   ctx.lineWidth = brushSize.value;
@@ -571,186 +474,5 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.canvas-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 10px;
-  gap: 10px;
-  width: 100%;
-  height: 100%;
-  box-sizing: border-box;
-}
-
-.toolbar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px;
-  background-color: #f5f5f5;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  flex-wrap: wrap;
-}
-
-.toolbar.hidden {
-  visibility: hidden;
-  pointer-events: none;
-}
-
-.tool-button {
-  padding: 8px 16px;
-  border: 1px solid #ccc;
-  background-color: #fff;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s;
-}
-
-.tool-button:hover:not(:disabled) {
-  background-color: #e0e0e0;
-}
-
-.tool-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.tool-button.active {
-  background-color: #007bff;
-  color: white;
-  border-color: #007bff;
-}
-
-.tool-button.clear-btn {
-  background-color: #dc3545;
-  color: white;
-  border-color: #dc3545;
-}
-
-.tool-button.clear-btn:hover {
-  background-color: #c82333;
-}
-
-.color-picker {
-  grid-column: span 2;
-  width: 60px;
-  height: 32px;
-  border: 2px solid #ccc;
-  border-radius: 6px;
-  cursor: pointer;
-  padding: 0;
-  margin-top: 8px;
-  transition: all 0.1s;
-  justify-self: center;
-}
-
-.color-picker:hover {
-  transform: scale(1.05);
-  border-color: #999;
-}
-
-.brush-size-container {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 10px;
-}
-
-.brush-size-container label {
-  font-size: 14px;
-  color: #555;
-  white-space: nowrap;
-}
-
-.brush-slider {
-  width: 100px;
-  cursor: pointer;
-}
-
-.drawing-canvas {
-  border: 1px solid #ccc;
-  background-color: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  touch-action: none;
-}
-
-.color-palette {
-  display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  gap: 4px;
-  justify-content: center;
-  align-items: center;
-  padding: 12px;
-  background-color: rgba(255, 255, 255, 0.9);
-  border-radius: 8px;
-  flex-shrink: 0;
-  max-width: 320px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.color-palette.hidden {
-  visibility: hidden;
-  pointer-events: none;
-}
-
-.color-button {
-  width: 28px;
-  height: 28px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-  cursor: pointer;
-  transition: all 0.1s;
-  position: relative;
-}
-
-.color-button.active {
-  transform: scale(1.15);
-  border: 2px solid #333;
-  z-index: 1;
-}
-
-.color-button:hover {
-  transform: scale(1.1);
-  border-color: #999;
-  z-index: 1;
-}
-
-/* Responsive adjustments voor uitgebreide palette */
-@media (max-width: 768px) {
-  .color-palette {
-    grid-template-columns: repeat(6, 1fr);
-    max-width: 240px;
-    gap: 3px;
-    padding: 8px;
-  }
-  
-  .color-button {
-    width: 24px;
-    height: 24px;
-  }
-  
-  .color-picker {
-    width: 50px;
-    height: 28px;
-  }
-}
-
-@media (max-width: 480px) {
-  .color-palette {
-    grid-template-columns: repeat(4, 1fr);
-    max-width: 160px;
-  }
-  
-  .color-button {
-    width: 20px;
-    height: 20px;
-  }
-  
-  .color-picker {
-    width: 44px;
-    height: 24px;
-  }
-}
+/* Alleen custom styling die niet met Tailwind kan worden gedaan - nu leeg! */
 </style>

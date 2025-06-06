@@ -199,7 +199,6 @@ onMounted(() => {
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    overflow: hidden;
     display: flex;
     flex-direction: column;
     font-family: 'Comic Neue', sans-serif;
