@@ -1,26 +1,26 @@
 <template>
   <div class="home-page">
     <!-- Main content wrapper -->
-    <div class="flex-1 flex flex-col items-center px-4 py-4">
+    <div class="flex-1 flex flex-col items-center px-[4%] py-[2vh]">
       <img 
         src="../assets/skrawio_logo_transparant3.png" 
         alt="Skraw.io Logo" 
-        class="max-w-[280px] sm:max-w-[200px] h-auto block mt-3 mb-4 mx-auto" 
+        class="w-[70%] max-w-[35vw] sm:max-w-[25vw] h-auto block mt-[1.5vh] mb-[2vh] mx-auto" 
       />
       
       <!-- Game interface blok -->
-      <div class="bg-[#f5ecc8bf] rounded-sm p-3 sm:p-4 w-full max-w-[420px] min-h-[240px] shadow-[0_4px_20px_rgba(0,0,0,0.3)] mb-4 flex flex-col gap-2">
+      <div class="bg-[#f5ecc8bf] rounded-sm p-[3%] w-[90%] max-w-[42vw] min-h-[30vh] shadow-[0_4px_20px_rgba(0,0,0,0.3)] mb-[2vh] flex flex-col gap-[1vh]">
         <!-- Name input and language selector row -->
-        <div class="flex flex-col sm:flex-row gap-2">
+        <div class="flex flex-col sm:flex-row gap-[1vh]">
           <input 
             type="text" 
-            class="flex-1 sm:flex-[2] py-2 px-3 border-2 border-[#d4c19c] rounded-md text-sm bg-white/90 text-[#654321] placeholder-gray-400" 
+            class="flex-1 sm:flex-[2] py-[1.5vh] px-[3%] border-2 border-[#d4c19c] rounded-md text-[clamp(0.75rem,1.5vw,0.875rem)] bg-white/90 text-[#654321] placeholder-gray-400" 
             placeholder="Enter your name" 
             v-model="playerName" 
             @keyup.enter="playGame"
           />
           <select 
-            class="flex-1 py-2 px-3 border-2 border-[#d4c19c] rounded-md text-sm bg-white/90 text-[#654321] cursor-pointer"
+            class="flex-1 py-[1.5vh] px-[3%] border-2 border-[#d4c19c] rounded-md text-[clamp(0.75rem,1.5vw,0.875rem)] bg-white/90 text-[#654321] cursor-pointer"
             v-model="selectedLanguage"
           >
             <option value="dutch">Dutch</option>
@@ -31,21 +31,21 @@
         </div>
         
         <!-- Avatar selector -->
-        <div class="bg-[#f5ecc8d9] shadow-[0_2px_10px_rgba(0,0,0,0.2)] my-2 p-2 sm:p-3 rounded-sm">
-          <h4 class="text-[#8B4513] text-xs sm:text-sm font-bold text-center mb-2">Choose your character</h4>
+        <div class="bg-[#f5ecc8d9] shadow-[0_2px_10px_rgba(0,0,0,0.2)] my-[1vh] p-[2%] rounded-sm">
+          <h4 class="text-[#8B4513] text-[clamp(0.75rem,1.4vw,0.875rem)] font-bold text-center mb-[1vh]">Choose your character</h4>
           
           <!-- Character customization options -->
-          <div class="space-y-2 mb-3">
+          <div class="space-y-[1vh] mb-[1.5vh]">
             <!-- Color selection -->
             <div>
-              <label class="text-[#654321] text-xs font-bold block mb-1">Color:</label>
-              <div class="flex gap-1 sm:gap-1.5 justify-center flex-wrap">
+              <label class="text-[#654321] text-[clamp(0.7rem,1.2vw,0.75rem)] font-bold block mb-[0.5vh]">Color:</label>
+              <div class="flex gap-[1%] justify-center flex-wrap">
                 <button 
                   v-for="color in availableColors" 
                   :key="color"
                   @click="selectedColor = color"
                   :class="[
-                    'w-4 h-4 sm:w-5 sm:h-5 rounded-full border-2 transition-all duration-200 hover:scale-110',
+                    'w-[clamp(1rem,2.5vw,1.25rem)] h-[clamp(1rem,2.5vw,1.25rem)] rounded-full border-2 transition-all duration-200 hover:scale-110',
                     selectedColor === color ? 'border-gray-800 scale-110' : 'border-gray-300'
                   ]"
                   :style="{ backgroundColor: getColorHex(color) }"
@@ -55,14 +55,14 @@
             
             <!-- Mood selection -->
             <div>
-              <label class="text-[#654321] text-xs font-bold block mb-1">Mood:</label>
-              <div class="flex gap-1 sm:gap-1.5 justify-center flex-wrap">
+              <label class="text-[#654321] text-[clamp(0.7rem,1.2vw,0.75rem)] font-bold block mb-[0.5vh]">Mood:</label>
+              <div class="flex gap-[1%] justify-center flex-wrap">
                 <button 
                   v-for="mouth in availableMouths" 
                   :key="mouth"
                   @click="selectedMouth = mouth"
                   :class="[
-                    'px-1.5 sm:px-2 py-0.5 text-xs rounded border-2 transition-all duration-200 hover:scale-105',
+                    'px-[1.5%] py-[0.5vh] text-[clamp(0.7rem,1.2vw,0.75rem)] rounded border-2 transition-all duration-200 hover:scale-105',
                     selectedMouth === mouth 
                       ? 'border-[#8B4513] bg-[#8B4513] text-white' 
                       : 'border-[#d4c19c] bg-white text-[#654321]'
@@ -75,14 +75,14 @@
             
             <!-- Eyes selection -->
             <div>
-              <label class="text-[#654321] text-xs font-bold block mb-1">Expression:</label>
-              <div class="flex gap-1 sm:gap-1.5 justify-center flex-wrap">
+              <label class="text-[#654321] text-[clamp(0.7rem,1.2vw,0.75rem)] font-bold block mb-[0.5vh]">Expression:</label>
+              <div class="flex gap-[1%] justify-center flex-wrap">
                 <button 
                   v-for="eyes in availableEyes" 
                   :key="eyes"
                   @click="selectedEyes = eyes"
                   :class="[
-                    'px-1.5 sm:px-2 py-0.5 text-xs rounded border-2 transition-all duration-200 hover:scale-105',
+                    'px-[1.5%] py-[0.5vh] text-[clamp(0.7rem,1.2vw,0.75rem)] rounded border-2 transition-all duration-200 hover:scale-105',
                     selectedEyes === eyes 
                       ? 'border-[#8B4513] bg-[#8B4513] text-white' 
                       : 'border-[#d4c19c] bg-white text-[#654321]'
@@ -96,11 +96,11 @@
           
           <!-- Character preview -->
           <div class="flex justify-center">
-            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-lg border-2 border-[#d4c19c] flex items-center justify-center shadow-inner">
+            <div class="w-[clamp(2.5rem,6vw,3rem)] h-[clamp(2.5rem,6vw,3rem)] bg-white rounded-lg border-2 border-[#d4c19c] flex items-center justify-center shadow-inner">
               <img 
                 :src="characterImagePath"
                 :alt="`Character ${selectedColor} ${selectedMouth} ${selectedEyes}`"
-                class="w-7 h-7 sm:w-9 sm:h-9 object-contain"
+                class="w-[clamp(1.75rem,4.5vw,2.25rem)] h-[clamp(1.75rem,4.5vw,2.25rem)] object-contain"
                 @error="handleImageError"
               />
             </div>
@@ -110,29 +110,29 @@
         <!-- Play buttons -->
         <a 
           :href="`/game?name=${encodeURIComponent(playerName)}&lang=${selectedLanguage}`" 
-          class="bg-green-600 text-white border-none rounded-md py-2.5 px-4 text-sm sm:text-base font-bold cursor-pointer transition-colors duration-300 no-underline inline-block text-center self-center w-full hover:bg-green-700 hover:no-underline"
+          class="bg-green-600 text-white border-none rounded-md py-[2vh] px-[4%] text-[clamp(0.875rem,1.8vw,1rem)] font-bold cursor-pointer transition-colors duration-300 no-underline inline-block text-center self-center w-full hover:bg-green-700 hover:no-underline"
           @click.prevent="playGame"
         > 
           Play!
         </a>
-        <button class="bg-blue-600 text-white border-none rounded-md py-2.5 px-4 text-sm sm:text-base font-bold cursor-pointer transition-colors duration-300 w-full hover:bg-blue-700">
+        <button class="bg-blue-600 text-white border-none rounded-md py-[2vh] px-[4%] text-[clamp(0.875rem,1.8vw,1rem)] font-bold cursor-pointer transition-colors duration-300 w-full hover:bg-blue-700">
           Create Private Room
         </button>
       </div>
     </div>
     
     <!-- Footer secties -->
-    <div class="w-screen bg-[#f5ecc8bf] pt-3 sm:pt-4 pb-2 sm:pb-3 flex justify-center">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-5 max-w-6xl w-full px-4 sm:px-6 md:px-5">
-        <div class="bg-[#f5ecc8d9] rounded-sm p-3 sm:p-4 shadow-[0_2px_10px_rgba(0,0,0,0.2)] min-h-[100px]">
-          <h3 class="text-[#8B4513] text-xs sm:text-sm mb-2 font-black text-center">About</h3>
-          <p class="text-[#654321] leading-4 sm:leading-5 mb-1 text-xs">
+    <div class="w-screen bg-[#f5ecc8bf] pt-[2vh] pb-[1.5vh] flex justify-center">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-[2%] max-w-6xl w-full px-[3%]">
+        <div class="bg-[#f5ecc8d9] rounded-sm p-[3%] shadow-[0_2px_10px_rgba(0,0,0,0.2)] min-h-[12vh]">
+          <h3 class="text-[#8B4513] text-[clamp(0.75rem,1.4vw,0.875rem)] mb-[1vh] font-black text-center">About</h3>
+          <p class="text-[#654321] leading-[1.4] mb-[0.5vh] text-[clamp(0.7rem,1.2vw,0.75rem)]">
             <strong>skraw.io</strong> is a school project by 5 ICT students and a fun online drawing and guessing game. One player draws a word while others try to guess it. Earn points by guessing correctly or drawing well!
           </p>
         </div>
         
-        <div class="bg-[#f5ecc8d9] rounded-sm p-3 sm:p-4 shadow-[0_2px_10px_rgba(0,0,0,0.2)] min-h-[100px] flex flex-col">
-          <h3 class="text-[#8B4513] text-xs sm:text-sm mb-2 font-black text-center flex-shrink-0">News</h3>
+        <div class="bg-[#f5ecc8d9] rounded-sm p-[3%] shadow-[0_2px_10px_rgba(0,0,0,0.2)] min-h-[12vh] flex flex-col">
+          <h3 class="text-[#8B4513] text-[clamp(0.75rem,1.4vw,0.875rem)] mb-[1vh] font-black text-center flex-shrink-0">News</h3>
           <div class="overflow-y-auto flex-1 max-h-[90px] pr-1">
             <div class="space-y-2">
               <div>
@@ -187,8 +187,8 @@
           </div>
         </div>
         
-        <div class="bg-[#f5ecc8d9] rounded-sm p-3 sm:p-4 shadow-[0_2px_10px_rgba(0,0,0,0.2)] min-h-[100px] relative">
-          <h3 class="text-[#8B4513] text-xs sm:text-sm mb-2 font-black text-center">How to play</h3>
+        <div class="bg-[#f5ecc8d9] rounded-sm p-[3%] shadow-[0_2px_10px_rgba(0,0,0,0.2)] min-h-[12vh] relative">
+          <h3 class="text-[#8B4513] text-[clamp(0.75rem,1.4vw,0.875rem)] mb-[1vh] font-black text-center">How to play</h3>
           
           <!-- Carousel container -->
           <div 
@@ -276,12 +276,12 @@
     </div>
     
     <!-- Footer links -->
-    <div class="w-screen bg-[#f5ecc8bf] pt-2 pb-2 flex justify-center">
-      <div class="flex flex-col sm:flex-row justify-center gap-2 sm:gap-4 md:gap-6 text-center px-4">
-        <router-link to="/contact" class="text-[#654321] no-underline text-xs font-bold transition-colors duration-300 hover:text-[#8B4513] hover:underline">Contact</router-link>
-        <router-link to="/terms" class="text-[#654321] no-underline text-xs font-bold transition-colors duration-300 hover:text-[#8B4513] hover:underline">Terms of Service</router-link>
-        <router-link to="/credits" class="text-[#654321] no-underline text-xs font-bold transition-colors duration-300 hover:text-[#8B4513] hover:underline">Credits</router-link>
-        <router-link to="/privacy" class="text-[#654321] no-underline text-xs font-bold transition-colors duration-300 hover:text-[#8B4513] hover:underline">Privacy Settings</router-link>
+    <div class="w-screen bg-[#f5ecc8bf] pt-[1.5vh] pb-[1.5vh] flex justify-center">
+      <div class="flex flex-col sm:flex-row justify-center gap-[1vh] sm:gap-[2%] text-center px-[3%]">
+        <router-link to="/contact" class="text-[#654321] no-underline text-[clamp(0.7rem,1.2vw,0.75rem)] font-bold transition-colors duration-300 hover:text-[#8B4513] hover:underline">Contact</router-link>
+        <router-link to="/terms" class="text-[#654321] no-underline text-[clamp(0.7rem,1.2vw,0.75rem)] font-bold transition-colors duration-300 hover:text-[#8B4513] hover:underline">Terms of Service</router-link>
+        <router-link to="/credits" class="text-[#654321] no-underline text-[clamp(0.7rem,1.2vw,0.75rem)] font-bold transition-colors duration-300 hover:text-[#8B4513] hover:underline">Credits</router-link>
+        <router-link to="/privacy" class="text-[#654321] no-underline text-[clamp(0.7rem,1.2vw,0.75rem)] font-bold transition-colors duration-300 hover:text-[#8B4513] hover:underline">Privacy Settings</router-link>
       </div>
     </div>
   </div>
