@@ -1,123 +1,10 @@
 <template>
-  <div class="flex flex-col items-center p-2.5 gap-2.5 w-full h-full box-border">
-    <!-- Toolbar bovenaan - verborgen maar neemt nog steeds ruimte in -->
-    <div class="flex items-center gap-2 p-2.5 bg-gray-100 rounded-lg shadow-md flex-wrap" :class="{ 'invisible pointer-events-none': !props.isCurrentDrawer }">
-      <input 
-        type="color" 
-        v-model="currentColor" 
-        class="w-15 h-8 border-2 border-gray-300 rounded-md cursor-pointer p-0 mt-2 transition-all duration-100 hover:scale-105 hover:border-gray-500"
-        @change="updateCanvasColor"
-      />
-      
-      <button 
-        @click="setMode('draw')"
-        :class="[
-          'px-4 py-2 border border-gray-300 bg-white rounded cursor-pointer text-sm transition-all duration-200 hover:bg-gray-200',
-          mode === 'draw' && !shapeType ? 'bg-blue-500 text-white border-blue-500' : ''
-        ]"
-      >
-        Draw
-      </button>
-      
-      <button 
-        @click="setMode('fill')"
-        :class="[
-          'px-4 py-2 border border-gray-300 bg-white rounded cursor-pointer text-sm transition-all duration-200 hover:bg-gray-200',
-          mode === 'fill' ? 'bg-blue-500 text-white border-blue-500' : ''
-        ]"
-      >
-        Fill
-      </button>
-      
-      <button 
-        @click="setShape('rectangle')"
-        :class="[
-          'px-4 py-2 border border-gray-300 bg-white rounded cursor-pointer text-sm transition-all duration-200 hover:bg-gray-200',
-          shapeType === 'rectangle' ? 'bg-blue-500 text-white border-blue-500' : ''
-        ]"
-      >
-        Rectangle
-      </button>
-      
-      <button 
-        @click="setShape('circle')"
-        :class="[
-          'px-4 py-2 border border-gray-300 bg-white rounded cursor-pointer text-sm transition-all duration-200 hover:bg-gray-200',
-          shapeType === 'circle' ? 'bg-blue-500 text-white border-blue-500' : ''
-        ]"
-      >
-        Circle
-      </button>
-      
-      <button 
-        @click="setShape('line')"
-        :class="[
-          'px-4 py-2 border border-gray-300 bg-white rounded cursor-pointer text-sm transition-all duration-200 hover:bg-gray-200',
-          shapeType === 'line' ? 'bg-blue-500 text-white border-blue-500' : ''
-        ]"
-      >
-        Line
-      </button>
-      
-      <button 
-        @click="setShape('triangle')"
-        :class="[
-          'px-4 py-2 border border-gray-300 bg-white rounded cursor-pointer text-sm transition-all duration-200 hover:bg-gray-200',
-          shapeType === 'triangle' ? 'bg-blue-500 text-white border-blue-500' : ''
-        ]"
-      >
-        Triangle
-      </button>
-      
-      <div class="flex items-center gap-2 px-2.5">
-        <label class="text-sm text-gray-600 whitespace-nowrap">Brush Size:</label>
-        <input 
-          type="range" 
-          v-model="brushSize"
-          min="1" 
-          max="50" 
-          class="w-25 cursor-pointer"
-          @input="updateBrushSize"
-        />
-      </div>
-      
-      <button 
-        class="px-4 py-2 border border-gray-300 bg-white rounded cursor-pointer text-sm transition-all duration-200 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed" 
-        @click="undo"
-        :disabled="undoStack.length === 0"
-      >
-        Undo
-      </button>
-      <button 
-        class="px-4 py-2 border border-gray-300 bg-white rounded cursor-pointer text-sm transition-all duration-200 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed" 
-        @click="redo"
-        :disabled="redoStack.length === 0"
-      >
-        Redo
-      </button>
-      <button class="px-4 py-2 border border-red-500 bg-red-500 text-white rounded cursor-pointer text-sm transition-all duration-200 hover:bg-red-600" @click="clearCanvas">
-        Clear
-      </button>
-    </div>
-
+  <div class="w-full h-full relative">
     <canvas 
       ref="canvasRef"
-      width="800"
-      height="600"
       @mousedown="handleMouseDown"
-      class="border-2 border-gray-400 bg-white shadow-lg touch-none rounded-sm"
+      class="bg-white touch-none absolute inset-0 w-full h-full"
     ></canvas>
-
-    <div class="grid grid-cols-8 gap-1 justify-center items-center p-3 bg-white bg-opacity-90 rounded-lg flex-shrink-0 max-w-80 shadow-md md:grid-cols-6 md:max-w-60 md:gap-0.5 md:p-2 sm:grid-cols-4 sm:max-w-40" :class="{ 'invisible pointer-events-none': !props.isCurrentDrawer }">
-      <button 
-        v-for="(color, index) in colors" 
-        :key="index"
-        class="w-7 h-7 rounded border border-gray-300 cursor-pointer transition-all duration-100 relative hover:scale-110 hover:border-gray-500 hover:z-10 md:w-6 md:h-6 sm:w-5 sm:h-5"
-        :style="{ backgroundColor: color }"
-        :class="{ 'scale-115 border-2 border-gray-800 z-10': color === currentColor }"
-        @click="selectColor(color)"
-      ></button>
-    </div>
   </div>
 </template>
 
@@ -469,14 +356,32 @@ const handleMouseUp = (e) => {
 
 // Socket event listeners
 onMounted(() => {
-  ctx = canvasRef.value.getContext('2d');
-  ctx.lineWidth = brushSize.value;
-  ctx.strokeStyle = ctx.fillStyle = currentColor.value;
+  // Resize canvas to fit container
+  const resizeCanvas = () => {
+    const container = canvasRef.value.parentElement;
+    const rect = container.getBoundingClientRect();
+    canvasRef.value.width = rect.width;
+    canvasRef.value.height = rect.height;
+    
+    // Re-initialize canvas context after resize
+    ctx = canvasRef.value.getContext('2d');
+    ctx.lineWidth = brushSize.value;
+    ctx.strokeStyle = ctx.fillStyle = currentColor.value;
+    
+    // Fill with white background
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, canvasRef.value.width, canvasRef.value.height);
+    ctx.fillStyle = currentColor.value;
+  };
   
-  // Fill with white background
-  ctx.fillStyle = '#FFFFFF';
-  ctx.fillRect(0, 0, canvasRef.value.width, canvasRef.value.height);
-  ctx.fillStyle = currentColor.value;
+  // Store resize function for cleanup
+  window.resizeCanvasHandler = resizeCanvas;
+  
+  // Initial resize
+  resizeCanvas();
+  
+  // Resize on window resize
+  window.addEventListener('resize', resizeCanvas);
   
   // Add event listeners
   document.addEventListener('mousemove', handleMouseMove);
@@ -591,6 +496,39 @@ const handleRemoteCanvasAction = (data) => {
 onUnmounted(() => {
   document.removeEventListener('mousemove', handleMouseMove);
   document.removeEventListener('mouseup', handleMouseUp);
+  if (window.resizeCanvasHandler) {
+    window.removeEventListener('resize', window.resizeCanvasHandler);
+    delete window.resizeCanvasHandler;
+  }
+});
+
+// Expose methods for parent component to call
+defineExpose({
+  setColor: (color) => {
+    currentColor.value = color;
+    updateCanvasColor();
+  },
+  setMode: (newMode, shapeType = null) => {
+    mode.value = newMode;
+    shapeType.value = shapeType;
+  },
+  setShape: (shape) => {
+    shapeType.value = shape;
+    mode.value = 'shape';
+  },
+  setBrushSize: (size) => {
+    brushSize.value = size;
+    updateBrushSize();
+  },
+  undo,
+  redo,
+  clearCanvas,
+  getCurrentColor: () => currentColor.value,
+  getCurrentMode: () => mode.value,
+  getCurrentShapeType: () => shapeType.value,
+  getCurrentBrushSize: () => brushSize.value,
+  getUndoStackLength: () => undoStack.value.length,
+  getRedoStackLength: () => redoStack.value.length
 });
 </script>
 

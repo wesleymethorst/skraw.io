@@ -1,6 +1,6 @@
 <template>
   <div class="game-page">
-    <div class="grid grid-cols-[280px_1fr_320px] grid-rows-[60px_auto_50px] h-screen w-screen box-border overflow-hidden font-comic" style="grid-template-areas: 'sidebar topbar rightbar' 'sidebar canvas rightbar' 'sidebar bottombar rightbar';">
+    <div class="grid grid-cols-[280px_1fr_320px] grid-rows-[60px_auto_120px] h-screen w-screen box-border overflow-hidden font-comic" style="grid-template-areas: 'sidebar topbar rightbar' 'sidebar canvas rightbar' 'sidebar bottombar rightbar';">
       <!-- Sidebar -->
       <aside class="bg-[#f5ecc8d9] shadow-[0_4px_20px_rgba(0,0,0,0.3)] flex flex-col p-4 text-sm gap-3 overflow-y-auto border-r-2 border-[#d4c19c]" style="grid-area: sidebar;">
         <div class="text-center mb-2">
@@ -39,32 +39,32 @@
         </header>
 
         <!-- Canvas area -->
-        <section class="bg-gray-100 shadow-inner flex flex-col justify-start items-center flex-grow min-h-0 overflow-hidden border-4 border-[#d4c19c] m-2 rounded-lg relative" style="grid-area: canvas;">
+        <section class="flex flex-col justify-start items-center flex-grow min-h-0 overflow-hidden relative" style="grid-area: canvas;">
           <div class="w-full h-full relative">
             <CanvasBoard 
               :socket="socket" 
               @color-change="currentColor = $event" 
               :isCurrentDrawer="isCurrentDrawer"
               class="w-full h-full"
+              ref="canvasBoardRef"
             />
           </div>
         </section>
 
-        <!-- Bottom bar -->
-        <footer class="bg-[#f5ecc8bf] shadow-[0_-2px_10px_rgba(0,0,0,0.2)] flex items-center justify-between px-6 gap-4 text-sm border-t-2 border-[#d4c19c]" style="grid-area: bottombar;">
-          <div class="flex items-center gap-3">
-            <span class="text-[#654321] font-bold">Current Color:</span>
-            <div class="w-6 h-6 rounded-full border-2 border-[#8B4513] shadow-sm" :style="{ backgroundColor: currentColor }"></div>
-          </div>
-          
-          <div class="flex items-center gap-4">
-            <div class="bg-[#f5ecc8d9] px-3 py-1.5 rounded-md border border-[#d4c19c] shadow-sm">
-              <span class="text-[#654321] font-bold">Round: <span class="text-[#8B4513]">1/3</span></span>
-            </div>
-            <div class="bg-[#f5ecc8d9] px-3 py-1.5 rounded-md border border-[#d4c19c] shadow-sm">
-              <span class="text-[#654321] font-bold">Score: <span class="text-[#A0522D]">0</span></span>
-            </div>
-          </div>
+        <!-- Bottom bar - Toolbar -->
+        <footer style="grid-area: bottombar;">
+          <Toolbar 
+            :isCurrentDrawer="isCurrentDrawer"
+            :socket="socket"
+            @color-change="handleColorChange"
+            @mode-change="handleModeChange"
+            @shape-change="handleShapeChange"
+            @brush-size-change="handleBrushSizeChange"
+            @undo="handleUndo"
+            @redo="handleRedo"
+            @clear-canvas="handleClearCanvas"
+            ref="toolbarRef"
+          />
         </footer>
       </div>
 
@@ -89,6 +89,7 @@ import ChatLobby from '../components/ChatLobby.vue';
 import { ref, onMounted, computed } from 'vue';
 import PlayerList from '../components/PlayerList.vue';
 import CanvasBoard from '../components/CanvasBoard.vue';
+import Toolbar from '../components/Toolbar.vue';
 import { useRoute } from 'vue-router';
 import socket from '../config/socket.js';
 
@@ -102,8 +103,70 @@ const currentWord = ref('');
 const isCurrentDrawer = ref(false);
 const gameState = ref('waiting'); // 'waiting' or 'playing'
 const route = useRoute();
+const toolbarRef = ref(null);
+const canvasBoardRef = ref(null);
+
 playerName.value = route.query.name || '';
 character.value = route.query.character || 'unknown';
+
+// Toolbar event handlers
+const handleColorChange = (color) => {
+  currentColor.value = color;
+  if (canvasBoardRef.value) {
+    canvasBoardRef.value.setColor(color);
+  }
+};
+
+const handleModeChange = (modeData) => {
+  if (canvasBoardRef.value) {
+    canvasBoardRef.value.setMode(modeData.mode, modeData.shapeType);
+  }
+};
+
+const handleShapeChange = (shape) => {
+  if (canvasBoardRef.value) {
+    canvasBoardRef.value.setShape(shape);
+  }
+};
+
+const handleBrushSizeChange = (size) => {
+  if (canvasBoardRef.value) {
+    canvasBoardRef.value.setBrushSize(size);
+  }
+};
+
+const handleUndo = () => {
+  if (canvasBoardRef.value) {
+    canvasBoardRef.value.undo();
+    // Update toolbar undo/redo stacks
+    updateToolbarStacks();
+  }
+};
+
+const handleRedo = () => {
+  if (canvasBoardRef.value) {
+    canvasBoardRef.value.redo();
+    // Update toolbar undo/redo stacks  
+    updateToolbarStacks();
+  }
+};
+
+const handleClearCanvas = () => {
+  if (canvasBoardRef.value) {
+    canvasBoardRef.value.clearCanvas();
+    // Update toolbar undo/redo stacks
+    updateToolbarStacks();
+  }
+};
+
+const updateToolbarStacks = () => {
+  if (toolbarRef.value && canvasBoardRef.value) {
+    const undoStackLength = canvasBoardRef.value.getUndoStackLength();
+    const redoStackLength = canvasBoardRef.value.getRedoStackLength();
+    toolbarRef.value.updateUndoStack(new Array(undoStackLength));
+    toolbarRef.value.updateRedoStack(new Array(redoStackLength));
+  }
+};
 
 
 onMounted(() => {
@@ -288,4 +351,4 @@ html, body, #app {
   color: #654321;
   font-weight: bold;
 }
-</style> 
+</style>
