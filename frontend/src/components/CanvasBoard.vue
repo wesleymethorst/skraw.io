@@ -166,12 +166,22 @@ const saveState = () => {
 const undo = () => {
   if (!undoStack.value.length) return;
   redoStack.value.push(ctx.getImageData(0, 0, canvasRef.value.width, canvasRef.value.height));
-  ctx.putImageData(undoStack.value.pop(), 0, 0);
+  const undoImageData = undoStack.value.pop();
+  ctx.putImageData(undoImageData, 0, 0);
   
   // Socket - stuur undo commando naar andere clients (alleen als je de tekenaar bent)
   if (props.socket && props.isCurrentDrawer) {
+    // Converteer ImageData naar canvas data URL om te versturen
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = canvasRef.value.width;
+    tempCanvas.height = canvasRef.value.height;
+    const tempCtx = tempCanvas.getContext('2d');
+    tempCtx.putImageData(undoImageData, 0, 0);
+    const dataURL = tempCanvas.toDataURL();
+    
     props.socket.emit('canvas-action', {
-      type: 'undo'
+      type: 'undo',
+      canvasData: dataURL
     });
   }
 };
@@ -179,13 +189,22 @@ const undo = () => {
 const redo = () => {
   if (!redoStack.value.length) return;
   undoStack.value.push(ctx.getImageData(0, 0, canvasRef.value.width, canvasRef.value.height));
-  ctx.putImageData(redoStack.value.pop(), 0, 0);
+  const redoImageData = redoStack.value.pop();
+  ctx.putImageData(redoImageData, 0, 0);
   
-  // Socket - stuur redo naar andere clients
-  if (props.socket) {
+  // Socket - stuur redo naar andere clients (alleen als je de tekenaar bent)
+  if (props.socket && props.isCurrentDrawer) {
+    // Converteer ImageData naar canvas data URL om te versturen
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = canvasRef.value.width;
+    tempCanvas.height = canvasRef.value.height;
+    const tempCtx = tempCanvas.getContext('2d');
+    tempCtx.putImageData(redoImageData, 0, 0);
+    const dataURL = tempCanvas.toDataURL();
+    
     props.socket.emit('canvas-action', {
       type: 'redo',
-      imageData: ctx.getImageData(0, 0, canvasRef.value.width, canvasRef.value.height)
+      canvasData: dataURL
     });
   }
 };
@@ -557,8 +576,13 @@ const handleRemoteCanvasAction = (data) => {
       break;
     case 'undo':
     case 'redo':
-      if (data.imageData) {
-        ctx.putImageData(data.imageData, 0, 0);
+      if (data.canvasData) {
+        const img = new Image();
+        img.onload = () => {
+          ctx.clearRect(0, 0, canvasRef.value.width, canvasRef.value.height);
+          ctx.drawImage(img, 0, 0);
+        };
+        img.src = data.canvasData;
       }
       break;
   }

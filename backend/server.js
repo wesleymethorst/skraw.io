@@ -324,6 +324,16 @@ class GameServer {
             type: 'clear', 
             playerId: socket.id 
           })
+        } else if (data.type === 'undo' || data.type === 'redo') {
+          // Alleen toestaan als de speler aan het tekenen is
+          if (player.isDrawing) {
+            // Stuur undo/redo commando naar andere clients met canvas data
+            socket.to(currentLobby.id).emit('canvas-action', { 
+              type: data.type,
+              canvasData: data.canvasData,
+              playerId: socket.id 
+            })
+          }
         } else {
           // Alleen toestaan als de speler aan het tekenen is
           if (player.isDrawing) {
