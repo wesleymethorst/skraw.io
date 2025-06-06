@@ -277,7 +277,7 @@
     
     <!-- Footer links -->
     <div class="w-screen bg-[#f5ecc8bf] pt-2 pb-2 flex justify-center">
-      <div class="flex flex-col md:flex-row justify-center gap-4 md:gap-6 text-center">
+      <div class="flex flex-col sm:flex-row justify-center gap-2 sm:gap-4 md:gap-6 text-center px-4">
         <router-link to="/contact" class="text-[#654321] no-underline text-xs font-bold transition-colors duration-300 hover:text-[#8B4513] hover:underline">Contact</router-link>
         <router-link to="/terms" class="text-[#654321] no-underline text-xs font-bold transition-colors duration-300 hover:text-[#8B4513] hover:underline">Terms of Service</router-link>
         <router-link to="/credits" class="text-[#654321] no-underline text-xs font-bold transition-colors duration-300 hover:text-[#8B4513] hover:underline">Credits</router-link>
