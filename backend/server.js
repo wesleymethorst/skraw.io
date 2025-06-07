@@ -268,14 +268,14 @@ class GameServer {
 
         currentLobby.messages.push(msg)
 
-        // 🎯 STAP 1: Check eerst of het woord EXACT klopt
+        // STAP 1: Check eerst of het woord EXACT klopt
         if (
           !player.hasGuessed &&
           !player.isDrawing &&
           currentLobby.currentWord &&
           message.text.trim().toLowerCase() === currentLobby.currentWord.toLowerCase()
         ) {
-          console.log(`✅ EXACT MATCH: "${message.text}" === "${currentLobby.currentWord}" - NO AI NEEDED`)
+          console.log(`EXACT MATCH: "${message.text}" === "${currentLobby.currentWord}" - NO AI NEEDED`)
           
           player.hasGuessed = true
           player.score += 10
@@ -299,7 +299,7 @@ class GameServer {
             }, 2000)
           }
         } 
-        // 🤖 STAP 2: Alleen als het NIET exact klopt EN tijdens het spel → AI gebruiken
+        //  STAP 2: Alleen als het NIET exact klopt EN tijdens het spel → AI gebruiken
         else if (
           !player.hasGuessed &&
           !player.isDrawing &&
