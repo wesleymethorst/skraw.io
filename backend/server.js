@@ -168,6 +168,16 @@ class GameServer {
       player.isDrawing = false
     })
 
+    // Wis alle tekening data op de server
+    lobby.drawingHistory = []
+    lobby.drawingData = []
+            
+    // Stuur clear commando naar ALLE clients in de lobby
+    this.io.to(lobby.id).emit('canvas-action', { 
+      type: 'clear', 
+      playerId: 'system'
+    })
+
     const drawer = lobby.getNextDrawer()
     const word = lobby.getRandomWord()
     lobby.currentWord = word
