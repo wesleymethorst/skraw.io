@@ -302,7 +302,7 @@ class GameServer {
           !player.isDrawing &&
           currentLobby.currentWord &&
           currentLobby.gameState === 'playing' &&
-          message.aiHelperEnabled === true // ✅ FIX: Check dat AI EXPLICIET aan staat
+          message.aiHelperEnabled === true
         ) {
           console.log(`🔍 NO EXACT MATCH: "${message.text}" !== "${currentLobby.currentWord}" - CALLING AI (AI ENABLED: ${message.aiHelperEnabled})`)
           
