@@ -257,26 +257,13 @@ class GameServer {
       })
 
       socket.on('send_message', async message => {
-        if (!currentLobby) {
-          socket.emit('error', { message: 'You are not in a lobby' })
-          return
-        }
+        if (!currentLobby) return
 
         const player = currentLobby.players.get(socket.id)
-        if (!player) {
-          socket.emit('error', { message: 'Player not found in lobby' })
-          return
-        }
+        if (!player) return
 
-        const msg = {
-          id: Date.now(),
-          playerId: socket.id,
-          playerName: player.name,
-          text: message.text,
-          timestamp: new Date().toISOString()
-        }
-
-        currentLobby.messages.push(msg)
+        const msg = currentLobby.addMessage(socket.id, message.text)
+        msg.playerName = player.name
 
         // STAP 1: Check eerst of het woord EXACT klopt
         if (
@@ -309,14 +296,15 @@ class GameServer {
             }, 2000)
           }
         } 
-        //  STAP 2: Alleen als het NIET exact klopt EN tijdens het spel → AI gebruiken
+        //  STAP 2: Alleen als het NIET exact klopt EN tijdens het spel EN AI INGESCHAKELD → AI gebruiken
         else if (
           !player.hasGuessed &&
           !player.isDrawing &&
           currentLobby.currentWord &&
-          currentLobby.gameState === 'playing'
+          currentLobby.gameState === 'playing' &&
+          message.aiHelperEnabled === true // ✅ FIX: Check dat AI EXPLICIET aan staat
         ) {
-          console.log(`🔍 NO EXACT MATCH: "${message.text}" !== "${currentLobby.currentWord}" - CALLING AI`)
+          console.log(`🔍 NO EXACT MATCH: "${message.text}" !== "${currentLobby.currentWord}" - CALLING AI (AI ENABLED: ${message.aiHelperEnabled})`)
           
           try {
             const aiResponse = await axios.post(`${this.AI_SERVICE_URL}/evaluate-guess`, {
@@ -327,32 +315,37 @@ class GameServer {
             const feedback = aiResponse.data.feedback
             console.log(`🧠 AI FEEDBACK: "${feedback}"`)
             
-            // Stuur het normale bericht + AI feedback
+            // Stuur het normale bericht naar alle spelers
             this.io.to(currentLobby.id).emit('new_message', msg)
             
-            // Stuur AI feedback als aparte melding
-            this.io.to(currentLobby.id).emit('ai_feedback', {
-              playerId: socket.id,
-              playerName: player.name,
-              guess: message.text.trim(),
-              feedback: feedback,
+            // Stuur AI feedback als normaal chatbericht alleen naar de gokker
+            const aiFeedbackMessage = {
+              id: Date.now() + 1,
+              playerId: 'ai-helper',
+              playerName: '🤖 AI Helper',
+              text: feedback,
               timestamp: new Date().toISOString()
-            })
+            }
+            
+            this.io.to(socket.id).emit('new_message', aiFeedbackMessage)
             
           } catch (error) {
             console.error('💥 AI Service error:', error)
-            // Fallback naar normaal bericht als AI service niet beschikbaar is
             this.io.to(currentLobby.id).emit('new_message', msg)
           }
         } 
         // 💬 STAP 3: Alle andere gevallen → gewoon normaal chatbericht
         else {
-          console.log(`💬 NORMAL MESSAGE: Not during game or from drawer`)
+          console.log(`💬 NORMAL MESSAGE: Not during game or from drawer or AI disabled (AI: ${message.aiHelperEnabled})`)
           this.io.to(currentLobby.id).emit('new_message', msg)
         }
       })
 
-
+      // ✅ NIEUWE EVENT HANDLER VOOR AI TOGGLE
+      socket.on('toggle_ai_helper', (data) => {
+        console.log(`🤖 Player ${socket.id} toggled AI Helper: ${data.enabled}`)
+        // Je kunt hier eventueel de AI status per speler opslaan als je wilt
+      })
 
       socket.on('canvas-action', data => {
         if (!currentLobby) return
