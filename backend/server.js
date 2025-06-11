@@ -309,7 +309,7 @@ class GameServer {
           console.log(`🔍 NO EXACT MATCH: "${message.text}" !== "${currentLobby.currentWord}" - CALLING AI (AI ENABLED: ${message.aiHelperEnabled})`)
           
           try {
-            const aiResponse = await axios.post(`${this.AI_SERVICE_URL}/evaluate-guess`, {
+            const aiResponse = await axios.post(`https://${this.AI_SERVICE_URL}/evaluate-guess`, {
               target_word: currentLobby.currentWord,
               user_guess: message.text.trim()
             })
