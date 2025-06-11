@@ -33,7 +33,7 @@
               <span v-else class="text-[#654321] font-bold">Current word: _ _ _ _ _</span>
             </div>
             <div class="bg-[#f5ecc8d9] px-3 py-1.5 rounded-md border border-[#d4c19c] shadow-sm">
-              <span class="text-[#654321] font-bold">Timer: <span class="text-[#8B4513]">60s</span></span>
+              <span class="text-[#654321] font-bold">Timer: <span class="text-[#8B4513]">{{ timer }}s</span></span>
             </div>
           </div>
         </header>
@@ -87,7 +87,7 @@
 
 <script setup>
 import ChatLobby from '../components/ChatLobby.vue';
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, onUnmounted } from 'vue';
 import PlayerList from '../components/PlayerList.vue';
 import CanvasBoard from '../components/CanvasBoard.vue';
 import Toolbar from '../components/Toolbar.vue';
@@ -103,6 +103,8 @@ const character = ref('');
 const currentWord = ref('');
 const isCurrentDrawer = ref(false);
 const gameState = ref('waiting'); // 'waiting' or 'playing'
+const timer = ref(120); // Timer starts at 120 seconds
+let timerInterval = null; // To store the interval ID
 const route = useRoute();
 const toolbarRef = ref(null);
 const canvasBoardRef = ref(null);
@@ -169,61 +171,136 @@ const updateToolbarStacks = () => {
   }
 };
 
+const undo = () => {
+  if (!undoStack.value.length) return;
+  redoStack.value.push(ctx.getImageData(0, 0, canvasRef.value.width, canvasRef.value.height));
+  const undoImageData = undoStack.value.pop();
+  ctx.putImageData(undoImageData, 0, 0);
+
+  // Emit event to update toolbar stacks
+  emit('update-toolbar-stacks', {
+    undoStackLength: undoStack.value.length,
+    redoStackLength: redoStack.value.length,
+  });
+};
+
+const redo = () => {
+  if (!redoStack.value.length) return;
+  undoStack.value.push(ctx.getImageData(0, 0, canvasRef.value.width, canvasRef.value.height));
+  const redoImageData = redoStack.value.pop();
+  ctx.putImageData(redoImageData, 0, 0);
+
+  // Emit event to update toolbar stacks
+  emit('update-toolbar-stacks', {
+    undoStackLength: undoStack.value.length,
+    redoStackLength: redoStack.value.length,
+  });
+};
+
+const clearCanvas = () => {
+  saveState();
+  ctx.clearRect(0, 0, canvasRef.value.width, canvasRef.value.height);
+
+  // Emit event to update toolbar stacks
+  emit('update-toolbar-stacks', {
+    undoStackLength: undoStack.value.length,
+    redoStackLength: redoStack.value.length,
+  });
+};
+
+const startTimer = () => {
+  if (timerInterval) clearInterval(timerInterval); // Clear any existing interval
+  timer.value = 120; // Reset the timer to 120 seconds
+
+  timerInterval = setInterval(() => {
+    if (timer.value > 0) {
+      timer.value -= 1; // Decrease the timer by 1 second
+    } else {
+      clearInterval(timerInterval); // Stop the timer when it reaches 0
+      timerInterval = null;
+      console.log('Timer ended'); // Debugging
+
+      // Emit an event to the server to indicate the timer has ended
+      socket.emit('timer_ended', { lobbyId: lobbyId.value });
+    }
+  }, 1000); // Update every second
+};
+
+const stopTimer = () => {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+};
 
 onMounted(() => {
   socket.emit('join_lobby', { name: playerName.value, character: character.value });
 
-socket.on('correct_guess', (data) => {
-  // Alleen de huidige tekenaar status resetten als IK degene ben die het woord geraden heeft
-  // Of als ALLE spelers het woord geraden hebben (dan is de ronde voorbij)
-  if (data.playerId === socket?.id) {
-    // Ik heb het woord geraden, dus ik ben geen tekenaar meer (als ik dat al was)
-    isCurrentDrawer.value = false;
+  socket.on('game_started', () => {
+    startTimer();
+  });
+
+  socket.on('new_round', () => {
+    startTimer();
+  });
+
+  socket.on('game_ended', () => {
+    stopTimer();
+  });
+
+  socket.on('correct_guess', (data) => {
+    // Alleen de huidige tekenaar status resetten als IK degene ben die het woord geraden heeft
+    // Of als ALLE spelers het woord geraden hebben (dan is de ronde voorbij)
+    if (data.playerId === socket?.id) {
+      // Ik heb het woord geraden, dus ik ben geen tekenaar meer (als ik dat al was)
+      isCurrentDrawer.value = false;
+      currentWord.value = '';
+    }
+    // Update de spelers data om te laten zien wie het geraden heeft
+    if (data.players) {
+      players.value = data.players;
+    }
+  });
+  socket.on('your_word', (data) => {
+    currentWord.value = data.word;
+    isCurrentDrawer.value = true
+  });
+
+  socket.on('game_started', (data) => {
+    gameState.value = 'playing';
+    startTimer(); // Start the timer
+    // Clear undo and redo stacks
+    if (canvasBoardRef.value) {
+      canvasBoardRef.value.clearHistory();
+    }
+    // Update players data with drawing status
+    if (data.players) {
+      players.value = data.players;
+      // Check if current player is the drawer
+      const currentPlayer = data.players.find(p => p.id === socket?.id);
+      isCurrentDrawer.value = currentPlayer ? currentPlayer.isDrawing : false;
+    }
+  });
+
+  socket.on('new_round', (data) => {
+    gameState.value = 'playing';
+    startTimer(); // Restart the timer
+    // Reset current word for everyone
     currentWord.value = '';
-  }
-  // Update de spelers data om te laten zien wie het geraden heeft
-  if (data.players) {
-    players.value = data.players;
-  }
-});
-socket.on('your_word', (data) => {
-  currentWord.value = data.word;
-  isCurrentDrawer.value = true
-});
+    // Clear undo and redo stacks
+    if (canvasBoardRef.value) {
+      canvasBoardRef.value.clearHistory();
+    }
+    // Update players data with new drawing status
+    if (data.players) {
+      players.value = data.players;
+      // Check if current player is the new drawer
+      const currentPlayer = data.players.find(p => p.id === socket?.id);
+      isCurrentDrawer.value = currentPlayer ? currentPlayer.isDrawing : false;
+    }
+  });
 
-socket.on('game_started', (data) => {
-  gameState.value = 'playing';
-  // Clear undo and redo stacks
-  if (canvasBoardRef.value) {
-    canvasBoardRef.value.clearHistory();
-  }
-  // Update players data with drawing status
-  if (data.players) {
-    players.value = data.players;
-    // Check if current player is the drawer
-    const currentPlayer = data.players.find(p => p.id === socket?.id);
-    isCurrentDrawer.value = currentPlayer ? currentPlayer.isDrawing : false;
-  }
-});
-
-socket.on('new_round', (data) => {
-  gameState.value = 'playing';
-  // Reset current word for everyone
-  currentWord.value = '';
-  // Clear undo and redo stacks
-  if (canvasBoardRef.value) {
-    canvasBoardRef.value.clearHistory();
-  }
-  // Update players data with new drawing status
-  if (data.players) {
-    players.value = data.players;
-    // Check if current player is the new drawer
-    const currentPlayer = data.players.find(p => p.id === socket?.id);
-    isCurrentDrawer.value = currentPlayer ? currentPlayer.isDrawing : false;
-  }
-});
-
-socket.on('player_ready_update', (data) => {
+  socket.on('player_ready_update', (data) => {
     const playerIndex = players.value.findIndex(p => p.id === data.playerId);
     if (playerIndex !== -1) {
       players.value[playerIndex].isReady = data.isReady;
@@ -278,16 +355,14 @@ socket.on('player_ready_update', (data) => {
 
   // Handle game ended events (e.g. due to insufficient players after disconnect)
   socket.on('game_ended', (data) => {
-    gameState.value = data.gameState || 'waiting';
-    isCurrentDrawer.value = false;
-    currentWord.value = '';
-    
-    // Show notification to user about why game ended
-    if (data.message) {
-      console.log('Game ended:', data.message);
-      // You could show a toast notification or alert here
-    }
+    gameState.value = 'waiting';
+    stopTimer(); // Stop the timer
+    // Other game end logic...
   });
+});
+
+onUnmounted(() => {
+  stopTimer();
 });
 </script>
 
