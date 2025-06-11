@@ -39,6 +39,7 @@
           @keyup.enter="sendMessage" 
           placeholder="Type your guess or message..."
           maxlength="100"
+          :disabled="isCurrentDrawer"
           class="w-full p-2.5 border-2 border-[#d4c19c] rounded-md bg-white/90 text-[#654321] placeholder-[#A0522D] font-comic text-sm focus:outline-none focus:border-[#8B4513] focus:shadow-[0_0_0_2px_rgba(139,69,19,0.2)] transition-all duration-200"
         >
         <div class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-[#A0522D]">{{ newMessage.length }}/100</div>
@@ -46,7 +47,7 @@
       <button 
         @click="sendMessage" 
         class="px-4 py-2.5 bg-gradient-to-br from-green-600 to-green-700 text-white border-none rounded-md cursor-pointer font-bold text-sm transition-all duration-200 hover:from-green-700 hover:to-green-800 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed"
-        :disabled="!newMessage.trim()"
+        :disabled="isCurrentDrawer || !newMessage.trim()"
       >
         Send Message
       </button>
@@ -69,7 +70,8 @@ import { ref, onMounted, onBeforeUnmount, nextTick, watch } from 'vue';
 
 const props = defineProps({
   socket: Object,
-  lobbyData: Object
+  lobbyData: Object,
+  isCurrentDrawer: Boolean // Nieuwe prop toegevoegd
 });
 
 const lobbyId = ref(props.lobbyData?.lobbyId || '');

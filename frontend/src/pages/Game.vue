@@ -77,6 +77,7 @@
           <ChatLobby 
             :socket="socket" 
             :lobbyData="{ lobbyId, playerCount: players.length, maxPlayers, messages: [] }" 
+            :isCurrentDrawer="isCurrentDrawer"
           />
         </div>
       </aside>
