@@ -7,22 +7,79 @@ const wordsByLanguage = {
   dutch: [
     "appel", "banaan", "hond", "kat", "huis", "auto", "fiets", "boom", 
     "zon", "maan", "ster", "boek", "pen", "school", "leraar", 
-    "water", "vuur", "aarde", "lucht", "vogel", "vis", "olifant"
+    "water", "vuur", "aarde", "lucht", "vogel", "vis", "olifant",
+    "stoel", "tafel", "plant", "bloem", "strand", "kasteel", "brug", "toren",
+    "kamer", "keuken", "bed", "bank", "lamp", "deur", "raam", "muur",
+    "fiets", "boot", "trein", "bus", "metro", "vliegtuig", "taxi", "motor",
+    "appel", "peer", "kers", "druif", "meloen", "citroen", "perzik", "pruim",
+    "hond", "kat", "paard", "koe", "varken", "geit", "schaap", "kip",
+    "mes", "vork", "lepel", "bord", "glas", "kopje", "pan", "oven",
+    "bal", "pop", "auto", "trein", "vliegtuig", "boot", "fiets", "robot",
+    "regen", "sneeuw", "zon", "maan", "ster", "wind", "mist", "storm",
+    "boom", "gras", "bloem", "plant", "bos", "veld", "berg", "heuvel",
+    "stoel", "tafel", "bank", "bed", "kast", "lamp", "deur", "raam",
+    "boek", "pen", "papier", "schrift", "map", "computer", "telefoon", "tablet",
+    "water", "vuur", "aarde", "lucht", "ijs", "steen", "zand", "modder",
+    "vogel", "vis", "hond", "kat", "paard", "koe", "geit", "schaap",
+    "fiets", "auto", "bus", "trein", "boot", "vliegtuig", "taxi", "motor",
+    "appel", "peer", "kers", "druif", "meloen", "citroen", "perzik", "pruim"
   ],
   english: [
     "apple", "banana", "dog", "cat", "house", "car", "bicycle", "tree",
     "sun", "moon", "star", "book", "pen", "school", "teacher",
-    "water", "fire", "earth", "air", "bird", "fish", "elephant"
+    "water", "fire", "earth", "air", "bird", "fish", "elephant",
+    "chair", "table", "plant", "flower", "beach", "castle", "bridge", "tower",
+    "room", "kitchen", "bed", "sofa", "lamp", "door", "window", "wall",
+    "bike", "boat", "train", "bus", "metro", "plane", "taxi", "motor",
+    "peach", "grape", "melon", "lemon", "plum", "cherry", "pear", "apple",
+    "knife", "fork", "spoon", "plate", "glass", "cup", "pan", "oven",
+    "ball", "doll", "car", "train", "plane", "boat", "bike", "robot",
+    "rain", "snow", "sun", "moon", "star", "wind", "fog", "storm",
+    "tree", "grass", "flower", "plant", "forest", "field", "mountain", "hill",
+    "chair", "table", "sofa", "bed", "closet", "lamp", "door", "window",
+    "book", "pen", "paper", "notebook", "folder", "computer", "phone", "tablet",
+    "water", "fire", "earth", "air", "ice", "stone", "sand", "mud",
+    "bird", "fish", "dog", "cat", "horse", "cow", "goat", "sheep",
+    "bike", "car", "bus", "train", "boat", "plane", "taxi", "motor",
+    "peach", "grape", "melon", "lemon", "plum", "cherry", "pear", "apple"
   ],
   german: [
     "Apfel", "Banane", "Hund", "Katze", "Haus", "Auto", "Fahrrad", "Baum",
     "Sonne", "Mond", "Stern", "Buch", "Stift", "Schule", "Lehrer",
-    "Wasser", "Feuer", "Erde", "Luft", "Vogel", "Fisch", "Elefant"
+    "Wasser", "Feuer", "Erde", "Luft", "Vogel", "Fisch", "Elefant",
+    "Stuhl", "Tisch", "Pflanze", "Blume", "Strand", "Schloss", "Brücke", "Turm",
+    "Zimmer", "Küche", "Bett", "Sofa", "Lampe", "Tür", "Fenster", "Wand",
+    "Rad", "Boot", "Zug", "Bus", "U-Bahn", "Flugzeug", "Taxi", "Motor",
+    "Pfirsich", "Traube", "Melone", "Zitrone", "Pflaume", "Kirsche", "Birne", "Apfel",
+    "Messer", "Gabel", "Löffel", "Teller", "Glas", "Tasse", "Pfanne", "Ofen",
+    "Ball", "Puppe", "Auto", "Zug", "Flugzeug", "Boot", "Rad", "Roboter",
+    "Regen", "Schnee", "Sonne", "Mond", "Stern", "Wind", "Nebel", "Sturm",
+    "Baum", "Gras", "Blume", "Pflanze", "Wald", "Feld", "Berg", "Hügel",
+    "Stuhl", "Tisch", "Sofa", "Bett", "Schrank", "Lampe", "Tür", "Fenster",
+    "Buch", "Stift", "Papier", "Notizbuch", "Ordner", "Computer", "Telefon", "Tablet",
+    "Wasser", "Feuer", "Erde", "Luft", "Eis", "Stein", "Sand", "Schlamm",
+    "Vogel", "Fisch", "Hund", "Katze", "Pferd", "Kuh", "Ziege", "Schaf",
+    "Rad", "Auto", "Bus", "Zug", "Boot", "Flugzeug", "Taxi", "Motor",
+    "Pfirsich", "Traube", "Melone", "Zitrone", "Pflaume", "Kirsche", "Birne", "Apfel"
   ],
   french: [
     "pomme", "banane", "chien", "chat", "maison", "voiture", "vélo", "arbre",
     "soleil", "lune", "étoile", "livre", "stylo", "école", "professeur",
-    "eau", "feu", "terre", "air", "oiseau", "poisson", "éléphant"
+    "eau", "feu", "terre", "air", "oiseau", "poisson", "éléphant",
+    "chaise", "table", "plante", "fleur", "plage", "château", "pont", "tour",
+    "chambre", "cuisine", "lit", "canapé", "lampe", "porte", "fenêtre", "mur",
+    "vélo", "bateau", "train", "bus", "métro", "avion", "taxi", "moteur",
+    "pêche", "raisin", "melon", "citron", "prune", "cerise", "poire", "pomme",
+    "couteau", "fourchette", "cuillère", "assiette", "verre", "tasse", "poêle", "four",
+    "balle", "poupée", "voiture", "train", "avion", "bateau", "vélo", "robot",
+    "pluie", "neige", "soleil", "lune", "étoile", "vent", "brouillard", "tempête",
+    "arbre", "herbe", "fleur", "plante", "forêt", "champ", "montagne", "colline",
+    "chaise", "table", "canapé", "lit", "placard", "lampe", "porte", "fenêtre",
+    "livre", "stylo", "papier", "cahier", "dossier", "ordinateur", "téléphone", "tablette",
+    "eau", "feu", "terre", "air", "glace", "pierre", "sable", "boue",
+    "oiseau", "poisson", "chien", "chat", "cheval", "vache", "chèvre", "mouton",
+    "vélo", "voiture", "bus", "train", "bateau", "avion", "taxi", "moteur",
+    "pêche", "raisin", "melon", "citron", "prune", "cerise", "poire", "pomme"
   ]
 };
 
