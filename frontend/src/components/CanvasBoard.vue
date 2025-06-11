@@ -523,6 +523,10 @@ defineExpose({
   undo,
   redo,
   clearCanvas,
+  clearHistory: () => {
+    undoStack.value = [];
+    redoStack.value = [];
+  },
   getCurrentColor: () => currentColor.value,
   getCurrentMode: () => mode.value,
   getCurrentShapeType: () => shapeType.value,
