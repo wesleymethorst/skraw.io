@@ -192,7 +192,11 @@ socket.on('your_word', (data) => {
 });
 
 socket.on('game_started', (data) => {
-  gameState.value = 'playing'
+  gameState.value = 'playing';
+  // Clear undo and redo stacks
+  if (canvasBoardRef.value) {
+    canvasBoardRef.value.clearHistory();
+  }
   // Update players data with drawing status
   if (data.players) {
     players.value = data.players;
@@ -200,12 +204,16 @@ socket.on('game_started', (data) => {
     const currentPlayer = data.players.find(p => p.id === socket?.id);
     isCurrentDrawer.value = currentPlayer ? currentPlayer.isDrawing : false;
   }
-})
+});
 
 socket.on('new_round', (data) => {
-  gameState.value = 'playing'
+  gameState.value = 'playing';
   // Reset current word for everyone
-  currentWord.value = ''
+  currentWord.value = '';
+  // Clear undo and redo stacks
+  if (canvasBoardRef.value) {
+    canvasBoardRef.value.clearHistory();
+  }
   // Update players data with new drawing status
   if (data.players) {
     players.value = data.players;
@@ -213,7 +221,7 @@ socket.on('new_round', (data) => {
     const currentPlayer = data.players.find(p => p.id === socket?.id);
     isCurrentDrawer.value = currentPlayer ? currentPlayer.isDrawing : false;
   }
-})
+});
 
 socket.on('player_ready_update', (data) => {
     const playerIndex = players.value.findIndex(p => p.id === data.playerId);
