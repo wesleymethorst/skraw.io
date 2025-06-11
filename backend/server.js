@@ -141,6 +141,8 @@ class GameServer {
     // AI Service URL
     this.AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:5001'
 
+    console.log(this.AI_SERVICE_URL)
+
     this.io = new Server(httpServer, {
       cors: {
         origin: process.env.FRONTEND_URL || '*',
@@ -322,7 +324,7 @@ class GameServer {
             const aiFeedbackMessage = {
               id: Date.now() + 1,
               playerId: 'ai-helper',
-              playerName: '🤖 AI Helper',
+              playerName: 'AI Helper',
               text: feedback,
               timestamp: new Date().toISOString()
             }
