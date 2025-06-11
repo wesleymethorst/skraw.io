@@ -315,7 +315,6 @@ class GameServer {
             })
 
             const feedback = aiResponse.data.feedback
-            console.log(`🧠 AI FEEDBACK: "${feedback}"`)
             
             // Stuur het normale bericht naar alle spelers
             this.io.to(currentLobby.id).emit('new_message', msg)
@@ -332,21 +331,14 @@ class GameServer {
             this.io.to(socket.id).emit('new_message', aiFeedbackMessage)
             
           } catch (error) {
-            console.error('💥 AI Service error:', error)
             this.io.to(currentLobby.id).emit('new_message', msg)
           }
         } 
-        // 💬 STAP 3: Alle andere gevallen → gewoon normaal chatbericht
+        // STAP 3: Alle andere gevallen → gewoon normaal chatbericht
         else {
           console.log(`💬 NORMAL MESSAGE: Not during game or from drawer or AI disabled (AI: ${message.aiHelperEnabled})`)
           this.io.to(currentLobby.id).emit('new_message', msg)
         }
-      })
-
-      // ✅ NIEUWE EVENT HANDLER VOOR AI TOGGLE
-      socket.on('toggle_ai_helper', (data) => {
-        console.log(`🤖 Player ${socket.id} toggled AI Helper: ${data.enabled}`)
-        // Je kunt hier eventueel de AI status per speler opslaan als je wilt
       })
 
       socket.on('canvas-action', data => {
