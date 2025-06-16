@@ -43,7 +43,7 @@
                 <button 
                   v-for="color in availableColors" 
                   :key="color"
-                  @click="selectedColor = color"
+                  @click="selectedColor = color; playSound1()"
                   :class="[
                     'w-4 h-4 sm:w-5 sm:h-5 rounded-full border-2 transition-all duration-200 hover:scale-110',
                     selectedColor === color ? 'border-gray-800 scale-110' : 'border-gray-300'
@@ -60,7 +60,7 @@
                 <button 
                   v-for="mouth in availableMouths" 
                   :key="mouth"
-                  @click="selectedMouth = mouth"
+                  @click="selectedMouth = mouth; playSound1()"
                   :class="[
                     'px-1.5 sm:px-2 py-0.5 text-xs rounded border-2 transition-all duration-200 hover:scale-105',
                     selectedMouth === mouth 
@@ -80,7 +80,7 @@
                 <button 
                   v-for="eyes in availableEyes" 
                   :key="eyes"
-                  @click="selectedEyes = eyes"
+                  @click="selectedEyes = eyes; playSound1()"
                   :class="[
                     'px-1.5 sm:px-2 py-0.5 text-xs rounded border-2 transition-all duration-200 hover:scale-105',
                     selectedEyes === eyes 
@@ -111,7 +111,7 @@
         <a 
           :href="`/game?name=${encodeURIComponent(playerName)}&lang=${selectedLanguage}`" 
           class="bg-green-600 text-white border-none rounded-md py-2.5 px-4 text-sm sm:text-base font-bold cursor-pointer transition-colors duration-300 no-underline inline-block text-center self-center w-full hover:bg-green-700 hover:no-underline"
-          @click.prevent="playGame"
+          @click.prevent="playGame(); playSound1()"
         > 
           Play!
         </a>
@@ -255,7 +255,7 @@
           
           <!-- Previous/Next arrows -->
           <button
-            @click="previousStep"
+            @click="previousStep(); playSound1()"
             class="absolute left-1 top-1/2 -translate-y-1/2 w-4 h-4 bg-[#8B4513]/20 hover:bg-[#8B4513]/40 rounded-full flex items-center justify-center transition-colors duration-200"
             :disabled="currentStep === 0"
             :class="{ 'opacity-50 cursor-not-allowed': currentStep === 0 }"
@@ -264,7 +264,7 @@
           </button>
           
           <button
-            @click="nextStep"
+            @click="nextStep(); playSound1()"
             class="absolute right-1 top-1/2 -translate-y-1/2 w-4 h-4 bg-[#8B4513]/20 hover:bg-[#8B4513]/40 rounded-full flex items-center justify-center transition-colors duration-200"
             :disabled="currentStep === totalSteps - 1"
             :class="{ 'opacity-50 cursor-not-allowed': currentStep === totalSteps - 1 }"
@@ -342,16 +342,26 @@ const playGame = () => {
   }
 }
 
+// 🎵 Sound effect setup
+const sound1 = new Audio(new URL('../assets/sounds/sound1.mp3', import.meta.url).href)
+sound1.volume = 0.4
+const playSound1 = () => {
+  sound1.currentTime = 0
+  sound1.play().catch(err => console.warn('Sound failed to play:', err))
+}
+
 // Carousel navigation methods
 const nextStep = () => {
   if (currentStep.value < totalSteps - 1) {
     currentStep.value++
+    playSound1()
   }
 }
 
 const previousStep = () => {
   if (currentStep.value > 0) {
     currentStep.value--
+    playSound1()
   }
 }
 
@@ -378,6 +388,7 @@ onMounted(() => {
   startAutoAdvance()
 })
 </script>
+
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap');
