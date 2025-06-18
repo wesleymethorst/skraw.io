@@ -363,7 +363,7 @@ class GameServer {
           currentLobby.gameState === 'playing' &&
           message.aiHelperEnabled === true
         ) {
-          console.log(`🔍 NO EXACT MATCH: "${message.text}" !== "${currentLobby.currentWord}" - CALLING AI (AI ENABLED: ${message.aiHelperEnabled})`)
+          console.log(`NO EXACT MATCH: "${message.text}" !== "${currentLobby.currentWord}" - CALLING AI (AI ENABLED: ${message.aiHelperEnabled})`)
           
           try {
             const aiResponse = await axios.post(`${this.AI_SERVICE_URL}/evaluate-guess`, {
