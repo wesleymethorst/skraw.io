@@ -1,5 +1,5 @@
 # Skraw.io
-
+a
 Een real-time multiplayer teken- en raadspel gebouwd met Vue.js en Socket.IO.
 
 ## 🏗️ Architectuur
