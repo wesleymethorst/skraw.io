@@ -137,51 +137,26 @@
             <div class="space-y-2">
               <div>
                 <h4 class="text-[#A0522D] text-xs mb-1 font-bold flex items-center justify-between">
-                  Fresh paint
-                  <span class="text-[#8B4513] text-xs font-normal">9th Nov 2022</span>
+                  Starting skraw.io development
+                  <span class="text-[#8B4513] text-xs font-normal">26 May 2025</span>
                 </h4>
-                <p class="text-[#654321] leading-4 mb-1 text-xs">Hello! Welcome to the new skraw.io!</p>
-                <ul class="text-[#654321] text-xs leading-4 ml-3 space-y-0.5">
-                  <li>• Redesign of the page</li>
-                  <li>• Mobile support</li>
-                  <li>• Reworked toolbar</li>
-                  <li class="ml-2">○ Undo button</li>
-                  <li class="ml-2">○ More colors</li>
-                  <li class="ml-2">○ Left- and rightclick to select colors</li>
-                  <li class="ml-2">○ Experimental pressure touch input</li>
-                  <li class="ml-2">○ Configurable hotkeys</li>
-                  <li>• Better player interactions/moderation</li>
-                  <li class="ml-2">○ Ability to kick and ban players</li>
-                  <li class="ml-2">○ Votekick, Mute and Report players</li>
-                  <li>• Invite friends to public rooms</li>
-                  <li>• More room settings</li>
-                  <li class="ml-2">○ Increased player count to 20</li>
-                  <li class="ml-2">○ Set amount of words to choose (1-5)</li>
-                </ul>
+                <p class="text-[#654321] leading-4 mb-1 text-xs">We began the development of skraw.io, our exciting new drawing and guessing game project.</p>
               </div>
               
               <div class="border-t border-[#d4c19c] pt-2">
                 <h4 class="text-[#A0522D] text-xs mb-1 font-bold flex items-center justify-between">
-                  Bug fixes
-                  <span class="text-[#8B4513] text-xs font-normal">1st Nov 2022</span>
+                  Project deadline
+                  <span class="text-[#8B4513] text-xs font-normal">20 June 2025</span>
                 </h4>
-                <ul class="text-[#654321] text-xs leading-4 ml-3 space-y-0.5">
-                  <li>• Fixed drawing lag issues</li>
-                  <li>• Improved chat filtering</li>
-                  <li>• Better connection stability</li>
-                </ul>
+                <p class="text-[#654321] leading-4 mb-1 text-xs">Final submission date for our project. All features must be completed and ready for evaluation!</p>
               </div>
               
               <div class="border-t border-[#d4c19c] pt-2">
                 <h4 class="text-[#A0522D] text-xs mb-1 font-bold flex items-center justify-between">
-                  Halloween Update
-                  <span class="text-[#8B4513] text-xs font-normal">31st Oct 2022</span>
+                  This is It event
+                  <span class="text-[#8B4513] text-xs font-normal">25 June 2025</span>
                 </h4>
-                <ul class="text-[#654321] text-xs leading-4 ml-3 space-y-0.5">
-                  <li>• Special Halloween themed words</li>
-                  <li>• Spooky avatar accessories</li>
-                  <li>• Limited time backgrounds</li>
-                </ul>
+                <p class="text-[#654321] leading-4 mb-1 text-xs">We'll be presenting our skraw.io project at the "This is It" showcase event for all students and faculty.</p>
               </div>
             </div>
           </div>
