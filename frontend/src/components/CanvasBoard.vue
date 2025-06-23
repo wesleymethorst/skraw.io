@@ -357,22 +357,40 @@ const handleMouseUp = (e) => {
 // Socket event listeners
 onMounted(() => {
   // Resize canvas to fit container
-  const resizeCanvas = () => {
-    const container = canvasRef.value.parentElement;
-    const rect = container.getBoundingClientRect();
-    canvasRef.value.width = rect.width;
-    canvasRef.value.height = rect.height;
-    
-    // Re-initialize canvas context after resize
-    ctx = canvasRef.value.getContext('2d');
-    ctx.lineWidth = brushSize.value;
-    ctx.strokeStyle = ctx.fillStyle = currentColor.value;
-    
-    // Fill with white background
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(0, 0, canvasRef.value.width, canvasRef.value.height);
-    ctx.fillStyle = currentColor.value;
-  };
+const resizeCanvas = () => {
+  const container = canvasRef.value.parentElement;
+  const rect = container.getBoundingClientRect();
+  const oldWidth = canvasRef.value.width;
+  const oldHeight = canvasRef.value.height;
+  const newWidth = rect.width;
+  const newHeight = rect.height;
+
+  // Sla de huidige canvas inhoud op
+  const tempCanvas = document.createElement('canvas');
+  tempCanvas.width = oldWidth;
+  tempCanvas.height = oldHeight;
+  const tempCtx = tempCanvas.getContext('2d');
+  tempCtx.drawImage(canvasRef.value, 0, 0);
+
+  // Pas de canvas grootte aan
+  canvasRef.value.width = newWidth;
+  canvasRef.value.height = newHeight;
+  
+  // Herstel de context instellingen
+  ctx = canvasRef.value.getContext('2d');
+  ctx.lineWidth = brushSize.value;
+  ctx.strokeStyle = ctx.fillStyle = currentColor.value;
+
+  // Bereken de schaal om de tekening proportioneel aan te passen
+  const scaleX = newWidth / oldWidth;
+  const scaleY = newHeight / oldHeight;
+  
+  // Schaal en herstel de vorige tekening
+  ctx.save();
+  ctx.scale(scaleX, scaleY);
+  ctx.drawImage(tempCanvas, 0, 0);
+  ctx.restore();
+};
   
   // Store resize function for cleanup
   window.resizeCanvasHandler = resizeCanvas;
